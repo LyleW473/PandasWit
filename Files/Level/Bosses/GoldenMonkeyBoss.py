@@ -500,145 +500,9 @@ class GoldenMonkeyBoss(Generic, AI):
         # Find the player (To continuously update the look angle)
         """Note: This is done because even if the boss other attacks will also need the current look angle """
         self.find_player(current_position = self.rect.center, player_position = self.players_position, delta_time = self.delta_time)
-        
-        # If the energy amount is greater than 0
-        if self.energy_amount > 0:
 
-            # If the current action is "Chase"
-            if self.current_action == "Chase":
-
-                # If the boss did not just enter phase 2 (so that it doesn't interrupt the effect)
-                if hasattr(self, "second_phase_circles_dict") == False:
-                    # Create a list of all the actions that the AI can currently perform, if the action's cooldown timer is None
-                    action_list = [action for action in self.behaviour_patterns_dict.keys() if (action == "SpiralAttack" or action == "DiveBomb") and self.behaviour_patterns_dict[action]["CooldownTimer"] == None]
-
-                # If the boss just entered phase 2
-                elif hasattr(self, "second_phase_circles_dict") == True:
-                    # Set the action list as empty, meaning that the boss can only chase the player
-                    action_list = []
-
-                # If there are any possible actions that the boss can perform (other than "Chase") and the boss has not performed an action recently 
-                if len(action_list) > 0 and self.extra_information_dict["NoActionTimer"] == None:
-
-                    # Reset the animation index whenever we change the action
-                    self.animation_index = 0
-
-                    # Choose a random action from the possible actions the boss can perform and set it as the current action
-                    self.current_action = random_choice(action_list)
-
-                    # If the current action that was chosen was "SpiralAttack", and "SpiralAttack" duration timer has not been set to start counting down yet
-                    if self.current_action == "SpiralAttack" and self.behaviour_patterns_dict["SpiralAttack"]["DurationTimer"] == None:
-
-                        # --------------------------------------------
-                        # Chillis
-
-                        # Set the duration timer to start counting down
-                        self.behaviour_patterns_dict["SpiralAttack"]["DurationTimer"] = self.behaviour_patterns_dict["SpiralAttack"]["Duration"] 
-
-                        # Set the chilli projectile controllers center position so that chilli projectiles can spawn from the center of the boss
-                        self.chilli_projectile_controller.boss_center_position = self.rect.center
-
-                        # Set the rotation direction for this spiral attack (1 = clockwise, -1 = anti-clockwise)
-                        self.chilli_projectile_controller.spiral_attack_angle_time_gradient *= random_choice([-1, 1])
-
-                        # --------------------------------------------
-                        # Spin
-                        
-                        # Set the pivot point to be the current center of the boss 
-                        self.behaviour_patterns_dict["SpiralAttack"]["SpiralAttackSpinPivotPoint"] = self.rect.center
-
-                        # Alter the angle time gradient of the spin, so that the boss can rotate around the pivot point clockwise or anti clockwise
-                        self.behaviour_patterns_dict["SpiralAttack"]["SpiralAttackSpinAngleTimeGradient"] *= random_choice([-1, 1])
-
-
-                    # If the current action that was chosen was "DiveBomb" and the current divebomb stage is set to None (meaning the attack has not started yet)
-                    elif self.current_action == "DiveBomb" and self.behaviour_patterns_dict["DiveBomb"]["CurrentDiveBombStage"] == None:
-                        
-                        # Set the divebomb stage to be Launch
-                        self.behaviour_patterns_dict["DiveBomb"]["CurrentDiveBombStage"] = "Launch"
-                        
-                        # Set the "Launch" duration timer to start counting down
-                        self.behaviour_patterns_dict["DiveBomb"]["Launch"]["DurationTimer"] = self.behaviour_patterns_dict["DiveBomb"]["Launch"]["Duration"]
-                
-                # If there are no possible actions that the boss can perform or the boss has performed an action recently
-                elif len(action_list) == 0 or self.extra_information_dict["NoActionTimer"] != None:
-                    # Move the boss (i.e. Chase the player)
-                    self.move()
-
-                    # If the boss has not thrown a chilli recently
-                    if self.behaviour_patterns_dict["Chase"]["ChilliThrowingCooldownTimer"] == None:
-                        
-                        # The angle the projectile will travel at
-                        projectile_angle = self.movement_information_dict["Angle"]
-                        
-                        # Create a chilli projectile and throw it at the player
-                        self.chilli_projectile_controller.create_chilli_projectile(
-                                        x_pos = self.rect.centerx,
-                                        y_pos = self.rect.centery,
-                                        angle = projectile_angle,
-                                        damage_amount = ChilliProjectileController.base_damage
-                                                                                    )
-
-                        # Set the cooldown timer to start counting down
-                        self.behaviour_patterns_dict["Chase"]["ChilliThrowingCooldownTimer"] = self.behaviour_patterns_dict["Chase"]["ChilliThrowingCooldown"] 
-
-                    # Update the cooldown for throwing chillis whilst chasing the player
-                    self.update_chilli_throwing_cooldown_timer()
-
-            # If the current action is "SpiralAttack"
-            if self.current_action == "SpiralAttack":
-
-                # -------------------------------------------------------------------------------------------------
-                # Chilli spiral attack
-                
-                # If enough time has passed since the last set of chilli projectiles were sent out
-                if self.behaviour_patterns_dict["SpiralAttack"]["SpiralChilliSpawningCooldownTimer"] == None:
-                    # Perform the spiral attack
-                    self.chilli_projectile_controller.create_spiral_attack()
-                    # Start the cooldown for the chilli spawning
-                    self.behaviour_patterns_dict["SpiralAttack"]["SpiralChilliSpawningCooldownTimer"] = self.behaviour_patterns_dict["SpiralAttack"]["SpiralChilliSpawningCooldown"]
-
-                # Always increase the spiral attack angle
-                self.chilli_projectile_controller.increase_spiral_attack_angle(delta_time = self.delta_time)
-
-                # Update the spiral chilli spawning cooldown timer
-                self.update_spiral_chilli_spawning_cooldown_timer()
-
-                # --------------------------------------------
-                # Pivoting around the original center point
-
-                # Increase the angle
-                self.behaviour_patterns_dict["SpiralAttack"]["SpiralAttackSpinNewAngle"] += self.behaviour_patterns_dict["SpiralAttack"]["SpiralAttackSpinAngleTimeGradient"] * self.delta_time
-                self.behaviour_patterns_dict["SpiralAttack"]["SpiralAttackSpinAngle"] = round(self.behaviour_patterns_dict["SpiralAttack"]["SpiralAttackSpinNewAngle"])
-
-                # Calculate the horizontal and vertical distnaces the player should be away from the pivot point
-                displacement_x = (self.behaviour_patterns_dict["SpiralAttack"]["SpiralAttackSpinPivotDistance"] * cos(radians(self.behaviour_patterns_dict["SpiralAttack"]["SpiralAttackSpinAngle"])))
-                displacement_y = (self.behaviour_patterns_dict["SpiralAttack"]["SpiralAttackSpinPivotDistance"] * sin(radians(self.behaviour_patterns_dict["SpiralAttack"]["SpiralAttackSpinAngle"])))
-                
-                # Calculate the new center position of the boss
-                self.behaviour_patterns_dict["SpiralAttack"]["SpiralAttackSpinNewCenterPositions"] = (
-                                                                            self.behaviour_patterns_dict["SpiralAttack"]["SpiralAttackSpinPivotPoint"][0] + displacement_x ,
-                                                                            self.behaviour_patterns_dict["SpiralAttack"]["SpiralAttackSpinPivotPoint"][1] + displacement_y 
-                                                                                                    )
-                
-                # Set the center of the boss to be the same as the new center positions
-                self.rect.centerx = self.behaviour_patterns_dict["SpiralAttack"]["SpiralAttackSpinNewCenterPositions"][0]
-                self.rect.centery = self.behaviour_patterns_dict["SpiralAttack"]["SpiralAttackSpinNewCenterPositions"][1]
-
-            # If the current action is "DiveBomb"
-            elif self.current_action == "DiveBomb":
-                # If the boss is in the "Launch" stage of the "DiveBomb" action
-                if self.behaviour_patterns_dict["DiveBomb"]["CurrentDiveBombStage"] == "Launch":
-                    
-                    # Modify the gradient depending on how much time is left before the boss enters the "Target" stage
-                    self.behaviour_patterns_dict["DiveBomb"]["Launch"]["JumpUpGradient"] = (
-                        self.behaviour_patterns_dict["DiveBomb"]["Launch"]["LaunchDistance"] / ((self.behaviour_patterns_dict["DiveBomb"]["Launch"]["DurationTimer"] / self.behaviour_patterns_dict["DiveBomb"]["Launch"]["Duration"]) / 10)
-                                                                                            )                                                   
-                    # Decrease the position of the boss (to move up)
-                    self.rect.y -= self.behaviour_patterns_dict["DiveBomb"]["Launch"]["JumpUpGradient"] * self.delta_time
-                
-        # If the boss has 0 or less than 0 energy
-        elif self.energy_amount <= 0:
+         # If the boss has 0 or less than 0 energy
+        if self.energy_amount <= 0:
             
             # If the current action is not already "Sleep" (meaning this is the first time this if check was entered)
             if self.current_action != "Sleep":
@@ -647,7 +511,170 @@ class GoldenMonkeyBoss(Generic, AI):
                 # Set the animation index back to 0
                 self.animation_index = 0
                 # Set the sleep duration timer to start counting down
-                self.behaviour_patterns_dict["Sleep"]["DurationTimer"] = self.behaviour_patterns_dict["Sleep"]["Duration"]
+                self.behaviour_patterns_dict["Sleep"]["DurationTimer"] = self.behaviour_patterns_dict["Sleep"]["Duration"] 
+
+            # Exit the method
+            return      
+
+        # If the energy amount is greater than 0
+        elif self.energy_amount > 0:
+
+            match self.current_action:
+                
+                # Chase
+                case "Chase":
+
+                    # If the boss did not just enter phase 2 (so that it doesn't interrupt the effect)
+                    if hasattr(self, "second_phase_circles_dict") == False:
+                        # Create a list of all the actions that the AI can currently perform, if the action's cooldown timer is None
+                        action_list = [action for action in self.behaviour_patterns_dict.keys() if (action == "SpiralAttack" or action == "DiveBomb") and self.behaviour_patterns_dict[action]["CooldownTimer"] == None]
+
+                    # If the boss just entered phase 2
+                    elif hasattr(self, "second_phase_circles_dict") == True:
+                        # Set the action list as empty, meaning that the boss can only chase the player
+                        action_list = []
+
+                    # If there are no possible actions that the boss can perform or the boss has performed an action recently
+                    if len(action_list) == 0 or self.extra_information_dict["NoActionTimer"] != None:
+                        # Continue chasing the player
+                        self.chase_player()
+                        # Exit the method
+                        return
+
+                    # If there are any possible actions that the boss can perform (other than "Chase") and the boss has not performed an action recently 
+                    elif len(action_list) > 0:
+                        
+                        # Reset the animation index whenever we change the action
+                        self.animation_index = 0
+                        # Choose a random action from the possible actions the boss can perform and set it as the current action
+                        self.current_action = random_choice(action_list)
+
+                        match self.current_action:
+                            
+                            # SpiralAttack
+                            case "SpiralAttack":
+
+                                # --------------------------------------------
+                                # Chillis
+
+                                # Set the duration timer to start counting down
+                                self.behaviour_patterns_dict["SpiralAttack"]["DurationTimer"] = self.behaviour_patterns_dict["SpiralAttack"]["Duration"] 
+
+                                # Set the chilli projectile controllers center position so that chilli projectiles can spawn from the center of the boss
+                                self.chilli_projectile_controller.boss_center_position = self.rect.center
+
+                                # Set the rotation direction for this spiral attack (1 = clockwise, -1 = anti-clockwise)
+                                self.chilli_projectile_controller.spiral_attack_angle_time_gradient *= random_choice([-1, 1])
+
+                                # --------------------------------------------
+                                # Spin
+                                
+                                # Set the pivot point to be the current center of the boss 
+                                self.behaviour_patterns_dict["SpiralAttack"]["SpiralAttackSpinPivotPoint"] = self.rect.center
+
+                                # Alter the angle time gradient of the spin, so that the boss can rotate around the pivot point clockwise or anti clockwise
+                                self.behaviour_patterns_dict["SpiralAttack"]["SpiralAttackSpinAngleTimeGradient"] *= random_choice([-1, 1])
+
+                            # DiveBomb
+                            # If the current action that was chosen was "DiveBomb" and the current divebomb stage is set to None (meaning the attack has not started yet)
+                            case _ if self.current_action == "DiveBomb" and self.behaviour_patterns_dict["DiveBomb"]["CurrentDiveBombStage"] == None:
+
+                                # Set the divebomb stage to be Launch
+                                self.behaviour_patterns_dict["DiveBomb"]["CurrentDiveBombStage"] = "Launch"
+                                
+                                # Set the "Launch" duration timer to start counting down
+                                self.behaviour_patterns_dict["DiveBomb"]["Launch"]["DurationTimer"] = self.behaviour_patterns_dict["DiveBomb"]["Launch"]["Duration"]
+
+                # SpiralAttack
+                case "SpiralAttack":
+
+                    # Perform the spiral attack
+                    self.perform_spiral_attack()
+
+                # DiveBomb
+                case "DiveBomb":
+
+                    # If the boss is in the "Launch" stage of the "DiveBomb" action
+                    if self.behaviour_patterns_dict["DiveBomb"]["CurrentDiveBombStage"] == "Launch":
+                        
+                        # Modify the gradient depending on how much time is left before the boss enters the "Target" stage
+                        self.behaviour_patterns_dict["DiveBomb"]["Launch"]["JumpUpGradient"] = (
+                            self.behaviour_patterns_dict["DiveBomb"]["Launch"]["LaunchDistance"] / ((self.behaviour_patterns_dict["DiveBomb"]["Launch"]["DurationTimer"] / self.behaviour_patterns_dict["DiveBomb"]["Launch"]["Duration"]) / 10)
+                                                                                                )                                                   
+                        # Decrease the position of the boss (to move up)
+                        self.rect.y -= self.behaviour_patterns_dict["DiveBomb"]["Launch"]["JumpUpGradient"] * self.delta_time
+
+    # --------------------------
+    # Actions
+
+    def chase_player(self):
+
+        # Functionality for chasing the player and throwing chillis at them
+
+        # Move the boss
+        self.move()
+
+        # If the boss has not thrown a chilli recently
+        if self.behaviour_patterns_dict["Chase"]["ChilliThrowingCooldownTimer"] == None:
+            
+            # The angle the projectile will travel at
+            projectile_angle = self.movement_information_dict["Angle"]
+        
+            # Create a chilli projectile and throw it at the player
+            self.chilli_projectile_controller.create_chilli_projectile(
+                                                                        x_pos = self.rect.centerx,
+                                                                        y_pos = self.rect.centery,
+                                                                        angle = projectile_angle,
+                                                                        damage_amount = ChilliProjectileController.base_damage
+                                                                        )
+
+            # Set the cooldown timer to start counting down
+            self.behaviour_patterns_dict["Chase"]["ChilliThrowingCooldownTimer"] = self.behaviour_patterns_dict["Chase"]["ChilliThrowingCooldown"] 
+
+        # Update the cooldown for throwing chillis whilst chasing the player
+        self.update_chilli_throwing_cooldown_timer()
+
+    def perform_spiral_attack(self):
+
+        # -------------------------------------------------------------------------------------------------
+        # Chilli spiral attack
+        
+        # If enough time has passed since the last set of chilli projectiles were sent out
+        if self.behaviour_patterns_dict["SpiralAttack"]["SpiralChilliSpawningCooldownTimer"] == None:
+            # Perform the spiral attack
+            self.chilli_projectile_controller.create_spiral_attack()
+            # Start the cooldown for the chilli spawning
+            self.behaviour_patterns_dict["SpiralAttack"]["SpiralChilliSpawningCooldownTimer"] = self.behaviour_patterns_dict["SpiralAttack"]["SpiralChilliSpawningCooldown"]
+
+        # Always increase the spiral attack angle
+        self.chilli_projectile_controller.increase_spiral_attack_angle(delta_time = self.delta_time)
+
+        # Update the spiral chilli spawning cooldown timer
+        self.update_spiral_chilli_spawning_cooldown_timer()
+
+        # --------------------------------------------
+        # Pivoting around the original center point
+
+        # Increase the angle
+        self.behaviour_patterns_dict["SpiralAttack"]["SpiralAttackSpinNewAngle"] += self.behaviour_patterns_dict["SpiralAttack"]["SpiralAttackSpinAngleTimeGradient"] * self.delta_time
+        self.behaviour_patterns_dict["SpiralAttack"]["SpiralAttackSpinAngle"] = round(self.behaviour_patterns_dict["SpiralAttack"]["SpiralAttackSpinNewAngle"])
+
+        # Calculate the horizontal and vertical distnaces the player should be away from the pivot point
+        displacement_x = (self.behaviour_patterns_dict["SpiralAttack"]["SpiralAttackSpinPivotDistance"] * cos(radians(self.behaviour_patterns_dict["SpiralAttack"]["SpiralAttackSpinAngle"])))
+        displacement_y = (self.behaviour_patterns_dict["SpiralAttack"]["SpiralAttackSpinPivotDistance"] * sin(radians(self.behaviour_patterns_dict["SpiralAttack"]["SpiralAttackSpinAngle"])))
+        
+        # Calculate the new center position of the boss
+        self.behaviour_patterns_dict["SpiralAttack"]["SpiralAttackSpinNewCenterPositions"] = (
+                                                                    self.behaviour_patterns_dict["SpiralAttack"]["SpiralAttackSpinPivotPoint"][0] + displacement_x ,
+                                                                    self.behaviour_patterns_dict["SpiralAttack"]["SpiralAttackSpinPivotPoint"][1] + displacement_y 
+                                                                                            )
+        
+        # Set the center of the boss to be the same as the new center positions
+        self.rect.centerx = self.behaviour_patterns_dict["SpiralAttack"]["SpiralAttackSpinNewCenterPositions"][0]
+        self.rect.centery = self.behaviour_patterns_dict["SpiralAttack"]["SpiralAttackSpinNewCenterPositions"][1]
+
+    # --------------------------
+    # Additional
 
     def update_and_draw_divebomb_circles(self, delta_time):
 

@@ -289,7 +289,7 @@ class SikaDeerBoss(Generic, AI):
         # Find which action is being performed and playing their animation 
         match self.current_action:
 
-            # Chase, Target, Stunned
+            # Chase, Target, Stunned, Stomp
             case _ if self.current_action == "Chase" or self.current_action == "Target" or self.current_action == "Stunned" or self.current_action == "Stomp":
 
                 # Loop the animation continuously
@@ -319,8 +319,72 @@ class SikaDeerBoss(Generic, AI):
         # Update damage flash effect timer
         self.update_damage_flash_effect_timer()
 
+
     # ----------------------------------------------------------------------------------
-    # Timer updating
+    # Decision point methods
+
+    def decide_action(self):
+
+        # The main "brain" of the deer boss, which will decide on what action to perform
+
+        match self.current_action:
+
+            # Chase
+            case "Chase":
+
+                # Create a list of all the actions that the AI can currently perform, if the action's cooldown timer is None
+                action_list = [action for action in self.behaviour_patterns_dict.keys() if (action == "Stomp" or action == "Target") and self.behaviour_patterns_dict[action]["CooldownTimer"] == None]
+
+                # If there are no possible actions that the boss can perform or the boss has performed an action recently
+                if len(action_list) == 0 or self.extra_information_dict["NoActionTimer"] != None: 
+                    # Continue chasing the player
+                    self.chase_player()
+                    # Exit the method
+                    return
+
+                # If there are any possible actions that the boss can perform (other than "Chase") and the boss has not performed an action recently
+                elif len(action_list) > 0:
+
+                    # Reset the animation index whenever we change the action
+                    self.animation_index = 0
+
+                    # Choose a random action from the possible actions the boss can perform and set it as the current action
+                    self.current_action = random_choice(action_list)
+                
+                    match self.current_action:
+                        
+                        # Target
+                        case "Target":
+
+                            # Set the duration timer to start counting down
+                            self.behaviour_patterns_dict["Target"]["DurationTimer"] = self.behaviour_patterns_dict["Target"]["Duration"] 
+                            
+                        # Stomp
+                        case "Stomp":
+
+                            # Set the duration timer to start counting down
+                            self.behaviour_patterns_dict[self.current_action]["DurationTimer"] = self.behaviour_patterns_dict["Stomp"]["Duration"]
+                            # Reset the movement acceleration
+                            self.reset_movement_acceleration(horizontal_reset = True, vertical_reset = True)
+
+            # Stomp
+            case "Stomp":
+
+                # If the stomp attack has not been completed and the stomp has already been completed for this animation index
+                if (self.behaviour_patterns_dict[self.current_action]["DurationTimer"] != None and self.behaviour_patterns_dict[self.current_action]["DurationTimer"] > 0 ) and \
+                    self.stomp_controller.last_animation_index != self.animation_index:
+
+                    """ If this is one of the stomp keyframes inside the boss stomp animation (except from when the stomp attack just started)"""
+                    if (self.animation_index == 0 and self.behaviour_patterns_dict[self.current_action]["DurationTimer"] != self.behaviour_patterns_dict[self.current_action]["Duration"]) \
+                        or self.animation_index == 5:
+                        # Start the stomp attack
+                        self.stomp_attack()
+
+            # "Charge"
+            case "Charge":
+                # Perform the charge attack 
+                self.charge_attack()
+
 
     def update_duration_timers(self):
 
@@ -341,73 +405,87 @@ class SikaDeerBoss(Generic, AI):
                 # Reset the animation index
                 self.animation_index = 0
 
-                # If the current action is not "Stunned" ("Stunned" does not have a cooldown timer)
-                if self.current_action != "Stunned":
-                    # Set the cooldown timer of the previous action to start counting down
-                    self.behaviour_patterns_dict[self.current_action]["CooldownTimer"] = self.behaviour_patterns_dict[self.current_action]["Cooldown"]
+                # Setting necessary attributes / variables based on the action completed
+                self.reset_after_action()
 
-                    # Add the current action to the previous actions dict so that its cooldown timer can count down
-                    self.previous_actions_dict[self.current_action] = None
+    def reset_after_action(self):
+        
+        # Performs the next step if the current action's duration timer has finished counting down
+        
+        # -----------------------------------------------------------------------
+        # Setting cooldown timers
+        """ 'Stunned' and 'Chase' does not have a cooldown timer, Chase is already covered as this method is called within the update_duration_timers method, where there is a check that the current action is not 'Chase' """
+        
+        if self.current_action != "Stunned": 
+            # Set the cooldown timer of the previous action to start counting down
+            self.behaviour_patterns_dict[self.current_action]["CooldownTimer"] = self.behaviour_patterns_dict[self.current_action]["Cooldown"]
+            # Add the current action to the previous actions dict so that its cooldown timer can count down
+            self.previous_actions_dict[self.current_action] = None
 
-                # If the current action is "Target"
-                if self.current_action == "Target":
+        # -----------------------------------------------------------------------
+        # Additional resets based on the current action
 
-                    # Set the "Charge" duration timer to start counting down
-                    self.behaviour_patterns_dict["Charge"]["DurationTimer"] = self.behaviour_patterns_dict["Charge"]["Duration"]
+        match self.current_action:
+            
+            # Target
+            case "Target":
 
-                    # Set the current charge direction (so that the boss cannot change direction whilst charging)
-                    self.behaviour_patterns_dict["Charge"]["ChargeDirection"] = self.find_look_direction()
+                # Set the "Charge" duration timer to start counting down
+                self.behaviour_patterns_dict["Charge"]["DurationTimer"] = self.behaviour_patterns_dict["Charge"]["Duration"]
 
-                    # Store the current charge angle (for calculations for movement)
-                    self.behaviour_patterns_dict["Charge"]["ChargeAngle"] = self.movement_information_dict["Angle"]
+                # Set the current charge direction (so that the boss cannot change direction whilst charging)
+                self.behaviour_patterns_dict["Charge"]["ChargeDirection"] = self.find_look_direction()
 
-                    # Store the position of the player at this point in time (used to draw red guidelines)
-                    self.behaviour_patterns_dict["Charge"]["PlayerPosAtChargeTime"] = self.players_position
+                # Store the current charge angle (for calculations for movement)
+                self.behaviour_patterns_dict["Charge"]["ChargeAngle"] = self.movement_information_dict["Angle"]
 
-                    # Reset the horizontal and vertical velocity (V, A and S are updated during the charge attack)
-                    self.movement_information_dict["HorizontalSuvatU"] = 0
-                    self.movement_information_dict["VerticalSuvatU"] = 0
-                            
-                    # Set the current action to Charge
-                    self.current_action = "Charge"
+                # Store the position of the player at this point in time (used to draw red guidelines)
+                self.behaviour_patterns_dict["Charge"]["PlayerPosAtChargeTime"] = self.players_position
 
-                # If the current action is "Charge
-                elif self.current_action == "Charge":
+                # Reset the horizontal and vertical velocity (V, A and S are updated during the charge attack)
+                self.movement_information_dict["HorizontalSuvatU"] = 0
+                self.movement_information_dict["VerticalSuvatU"] = 0
+                        
+                # Set the current action to Charge
+                self.current_action = "Charge"
 
-                    # Set the no action timer to start counting down
-                    self.extra_information_dict["NoActionTimer"] = self.extra_information_dict["NoActionTime"]
+            # Charge
+            case "Charge":
 
-                    # Set the "Target" cooldown timer to be the same as the "Charge" cooldown timer (This is because the attack sequence starts with "Target" and then "Charge")
-                    self.behaviour_patterns_dict["Target"]["CooldownTimer"] = self.behaviour_patterns_dict["Charge"]["CooldownTimer"]
+                # Set the no action timer to start counting down
+                self.extra_information_dict["NoActionTimer"] = self.extra_information_dict["NoActionTime"]
 
-                    # Reset the current charge direction back to None
-                    self.behaviour_patterns_dict["Charge"]["ChargeDirection"] = None
+                # Set the "Target" cooldown timer to be the same as the "Charge" cooldown timer (This is because the attack sequence starts with "Target" and then "Charge")
+                self.behaviour_patterns_dict["Target"]["CooldownTimer"] = self.behaviour_patterns_dict["Charge"]["CooldownTimer"]
 
-                    # If "EnterStunnedStateBoolean" was set to True, i.e. the boss collided a building tile
-                    if self.behaviour_patterns_dict["Charge"]["EnterStunnedStateBoolean"] == True:
-                        # Set the current action to "Stunned"
-                        self.current_action = "Stunned"
-                        # Set "EnterStunnedStateBoolean" back to False
-                        self.behaviour_patterns_dict["Charge"]["EnterStunnedStateBoolean"] = False
-                    
-                    # If "EnterStunnedStateBoolean" is set to False, i.e. the boss did not collide with a building tile
-                    elif self.behaviour_patterns_dict["Charge"]["EnterStunnedStateBoolean"] == False:
-                        # Set the current action back to Chase
-                        self.current_action = "Chase"
+                # Reset the current charge direction back to None
+                self.behaviour_patterns_dict["Charge"]["ChargeDirection"] = None
 
-                # If the current action is to "Stomp"
-                elif self.current_action == "Stomp":
-
-                    # Set the no action timer to start counting down
-                    self.extra_information_dict["NoActionTimer"] = self.extra_information_dict["NoActionTime"]
-
-                    # Set the current action back to Chase
-                    self.current_action = "Chase"
+                # If "EnterStunnedStateBoolean" was set to True, i.e. the boss collided a building tile
+                if self.behaviour_patterns_dict["Charge"]["EnterStunnedStateBoolean"] == True:
+                    # Set the current action to "Stunned"
+                    self.current_action = "Stunned"
+                    # Set "EnterStunnedStateBoolean" back to False
+                    self.behaviour_patterns_dict["Charge"]["EnterStunnedStateBoolean"] = False
                 
-                # If the current action is "Stunned"
-                elif self.current_action == "Stunned":
+                # If "EnterStunnedStateBoolean" is set to False, i.e. the boss did not collide with a building tile
+                elif self.behaviour_patterns_dict["Charge"]["EnterStunnedStateBoolean"] == False:
                     # Set the current action back to Chase
                     self.current_action = "Chase"
+                    
+            # Stomp
+            case "Stomp":
+
+                # Set the no action timer to start counting down
+                self.extra_information_dict["NoActionTimer"] = self.extra_information_dict["NoActionTime"]
+
+                # Set the current action back to Chase
+                self.current_action = "Chase"
+            
+            # Stunned
+            case "Stunned":
+                # Set the current action back to Chase
+                self.current_action = "Chase"
 
     # ----------------------------------------------------------------------------------
     # Gameplay
@@ -503,60 +581,6 @@ class SikaDeerBoss(Generic, AI):
 
         # Move the boss
         self.move()
-
-    def decide_action(self):
-
-        # The main "brain" of the deer boss, which will decide on what action to perform
-
-        # "Chase"
-        if self.current_action == "Chase":
-
-            # Create a list of all the actions that the AI can currently perform, if the action's cooldown timer is None
-            action_list = [action for action in self.behaviour_patterns_dict.keys() if (action == "Stomp" or action == "Target") and self.behaviour_patterns_dict[action]["CooldownTimer"] == None]
-
-            # If there are any possible actions that the boss can perform (other than "Chase") and the boss has not performed an action recently
-            if len(action_list) > 0 and self.extra_information_dict["NoActionTimer"] == None:
-
-                # Reset the animation index whenever we change the action
-                self.animation_index = 0
-
-                # Choose a random action from the possible actions the boss can perform and set it as the current action
-                self.current_action = random_choice(action_list)
-
-                # If the current action that was chosen was "Target", and target duration timer has not been set to start counting down yet
-                if self.current_action == "Target" and self.behaviour_patterns_dict["Target"]["DurationTimer"] == None:
-                    # Set the duration timer to start counting down
-                    self.behaviour_patterns_dict["Target"]["DurationTimer"] = self.behaviour_patterns_dict["Target"]["Duration"] 
-
-                # If the current action is to "Stomp"
-                elif self.current_action == "Stomp":
-                    # Set the duration timer to start counting down
-                    self.behaviour_patterns_dict[self.current_action]["DurationTimer"] = self.behaviour_patterns_dict["Stomp"]["Duration"]
-
-                    # Reset the movement acceleration
-                    self.reset_movement_acceleration(horizontal_reset = True, vertical_reset = True)
-
-            # If there are no possible actions that the boss can perform or the boss has performed an action recently
-            elif len(action_list) == 0 or self.extra_information_dict["NoActionTimer"] != None: 
-                # Continue chasing the player
-                self.chase_player()
-        
-        # "Stomp"
-        elif self.current_action == "Stomp":
-
-            # If the stomp attack has not been completed and the stomp has already been completed for this animation index
-            if self.behaviour_patterns_dict[self.current_action]["DurationTimer"] > 0 and self.stomp_controller.last_animation_index != self.animation_index:
-
-                """ If this is one of the stomp keyframes inside the boss stomp animation (except from when the stomp attack just started)"""
-                if (self.animation_index == 0 and self.behaviour_patterns_dict[self.current_action]["DurationTimer"] != self.behaviour_patterns_dict[self.current_action]["Duration"]) \
-                    or self.animation_index == 5:
-                    # Start the stomp attack
-                    self.stomp_attack()
-
-        # "Charge"
-        elif self.current_action == "Charge":
-            # Perform the charge attack 
-            self.charge_attack()
 
     def charge_attack(self):
 
