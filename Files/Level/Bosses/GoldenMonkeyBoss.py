@@ -96,6 +96,10 @@ class GoldenMonkeyBoss(Generic, AI):
         # A dictionary containing information relating to the behaviour of the Sika deer boss
         self.behaviour_patterns_dict = {
 
+                                    # Duration timer
+                                    "DurationTimer": None,
+
+                                    # Actions
                                     "Chase": { 
                                             "FullAnimationDuration": 600,
 
@@ -106,7 +110,6 @@ class GoldenMonkeyBoss(Generic, AI):
                                     "SpiralAttack": {
                                                     "EnergyDepletionAmount": 35,
                                                     "Duration": 6000,
-                                                    "DurationTimer": None,
                                                     "SpiralChilliSpawningCooldown": 60, # Cooldown between each chilli spawned in the spiral attack (50 chillis)
                                                     "SpiralChilliSpawningCooldownTimer": None, 
 
@@ -127,7 +130,6 @@ class GoldenMonkeyBoss(Generic, AI):
 
                                     "Sleep": {
                                         "Duration": 5500,
-                                        "DurationTimer": None,
                                         "FullAnimationDuration": 1200,
                                         "PlayerDamageMultiplierWhenBossIsSleeping": 1.75
                                             },
@@ -142,7 +144,6 @@ class GoldenMonkeyBoss(Generic, AI):
 
                                                 "Launch": {
                                                             "Duration": 450, 
-                                                            "DurationTimer": None,
                                                             "LaunchDistance": 40
                                                             # JumpTimeGradient (this is set when the boss is launching up)
 
@@ -150,14 +151,12 @@ class GoldenMonkeyBoss(Generic, AI):
 
                                                             },
                                                 "Target": {
-                                                        "Duration": 2100, #3000,
-                                                        "DurationTimer": None
+                                                        "Duration": 2100, 
+
                                                         },
 
                                                 "Land": {
-                                                        "Duration": 600, # 700
-                                                        "DurationTimer": None,
-
+                                                        "Duration": 600, 
 
                                                         "ShockwaveCircleAlphaLevel": 0,
                                                         "ShockwaveCircleAlphaLevelTimeGradient": 255 - 0 / (600 / 1000)
@@ -511,7 +510,7 @@ class GoldenMonkeyBoss(Generic, AI):
                 # Set the animation index back to 0
                 self.animation_index = 0
                 # Set the sleep duration timer to start counting down
-                self.behaviour_patterns_dict["Sleep"]["DurationTimer"] = self.behaviour_patterns_dict["Sleep"]["Duration"] 
+                self.behaviour_patterns_dict["DurationTimer"] = self.behaviour_patterns_dict["Sleep"]["Duration"] 
 
             # Exit the method
             return      
@@ -558,7 +557,7 @@ class GoldenMonkeyBoss(Generic, AI):
                                 # Chillis
 
                                 # Set the duration timer to start counting down
-                                self.behaviour_patterns_dict["SpiralAttack"]["DurationTimer"] = self.behaviour_patterns_dict["SpiralAttack"]["Duration"] 
+                                self.behaviour_patterns_dict["DurationTimer"] = self.behaviour_patterns_dict["SpiralAttack"]["Duration"] 
 
                                 # Set the chilli projectile controllers center position so that chilli projectiles can spawn from the center of the boss
                                 self.chilli_projectile_controller.boss_center_position = self.rect.center
@@ -583,7 +582,7 @@ class GoldenMonkeyBoss(Generic, AI):
                                 self.behaviour_patterns_dict["DiveBomb"]["CurrentDiveBombStage"] = "Launch"
                                 
                                 # Set the "Launch" duration timer to start counting down
-                                self.behaviour_patterns_dict["DiveBomb"]["Launch"]["DurationTimer"] = self.behaviour_patterns_dict["DiveBomb"]["Launch"]["Duration"]
+                                self.behaviour_patterns_dict["DurationTimer"] = self.behaviour_patterns_dict["DiveBomb"]["Launch"]["Duration"]
 
                 # SpiralAttack
                 case "SpiralAttack":
@@ -599,7 +598,7 @@ class GoldenMonkeyBoss(Generic, AI):
                         
                         # Modify the gradient depending on how much time is left before the boss enters the "Target" stage
                         self.behaviour_patterns_dict["DiveBomb"]["Launch"]["JumpUpGradient"] = (
-                            self.behaviour_patterns_dict["DiveBomb"]["Launch"]["LaunchDistance"] / ((self.behaviour_patterns_dict["DiveBomb"]["Launch"]["DurationTimer"] / self.behaviour_patterns_dict["DiveBomb"]["Launch"]["Duration"]) / 10)
+                            self.behaviour_patterns_dict["DiveBomb"]["Launch"]["LaunchDistance"] / ((self.behaviour_patterns_dict["DurationTimer"] / self.behaviour_patterns_dict["DiveBomb"]["Launch"]["Duration"]) / 10)
                                                                                                 )                                                   
                         # Decrease the position of the boss (to move up)
                         self.rect.y -= self.behaviour_patterns_dict["DiveBomb"]["Launch"]["JumpUpGradient"] * self.delta_time
@@ -721,7 +720,7 @@ class GoldenMonkeyBoss(Generic, AI):
 
             # Increase the radius of the smaller, growing circle and change the alpha level of the alpha surface
             self.dive_bomb_attack_controller.change_visual_effects(
-                                proportional_time_remaining = self.behaviour_patterns_dict["DiveBomb"]["Target"]["DurationTimer"] / self.behaviour_patterns_dict["DiveBomb"]["Target"]["Duration"],
+                                proportional_time_remaining = self.behaviour_patterns_dict["DurationTimer"] / self.behaviour_patterns_dict["DiveBomb"]["Target"]["Duration"],
                                 delta_time = delta_time
                                                                             )
 
@@ -871,12 +870,12 @@ class GoldenMonkeyBoss(Generic, AI):
         if self.current_action != "Chase" and self.current_action != "DiveBomb":
             
             # Decrease the timer
-            self.behaviour_patterns_dict[self.current_action]["DurationTimer"] -= 1000 * self.delta_time
+            self.behaviour_patterns_dict["DurationTimer"] -= 1000 * self.delta_time
             
             # If the current action's duration timer has finished counting down
-            if self.behaviour_patterns_dict[self.current_action]["DurationTimer"] <= 0:
+            if self.behaviour_patterns_dict["DurationTimer"] <= 0:
                 # Reset the duration timer back to None
-                self.behaviour_patterns_dict[self.current_action]["DurationTimer"] = None
+                self.behaviour_patterns_dict["DurationTimer"] = None
 
                 # Reset the animation index
                 self.animation_index = 0
@@ -932,14 +931,15 @@ class GoldenMonkeyBoss(Generic, AI):
             current_stage = self.behaviour_patterns_dict["DiveBomb"]["CurrentDiveBombStage"] 
 
             # If the current action's duration timer has not finished counting down
-            if self.behaviour_patterns_dict["DiveBomb"][current_stage]["DurationTimer"] > 0:
+            if self.behaviour_patterns_dict["DurationTimer"] > 0:
                 # Decrease the timer
-                self.behaviour_patterns_dict["DiveBomb"][current_stage]["DurationTimer"] -= 1000 * self.delta_time
+                self.behaviour_patterns_dict["DurationTimer"] -= 1000 * self.delta_time
             
             # If the current action's duration timer has finished counting down
-            if self.behaviour_patterns_dict["DiveBomb"][current_stage]["DurationTimer"] <= 0:
+            if self.behaviour_patterns_dict["DurationTimer"] <= 0:
+
                 # Reset the duration timer back to None
-                self.behaviour_patterns_dict["DiveBomb"][current_stage]["DurationTimer"] = None
+                self.behaviour_patterns_dict["DurationTimer"] = None
 
                 # Reset the animation index
                 self.animation_index = 0
@@ -953,7 +953,7 @@ class GoldenMonkeyBoss(Generic, AI):
                         self.behaviour_patterns_dict["DiveBomb"]["CurrentDiveBombStage"] = "Target"
 
                         # Set the divebomb "Target" duration timer to start counting down
-                        self.behaviour_patterns_dict["DiveBomb"]["Target"]["DurationTimer"] = self.behaviour_patterns_dict["DiveBomb"]["Target"]["Duration"]
+                        self.behaviour_patterns_dict["DurationTimer"] = self.behaviour_patterns_dict["DiveBomb"]["Target"]["Duration"]
 
                         # -----------------------------------------------------------------------
                         # Finding a valid divebomb end position 
@@ -1002,7 +1002,7 @@ class GoldenMonkeyBoss(Generic, AI):
                         self.behaviour_patterns_dict["DiveBomb"]["CurrentDiveBombStage"] = "Land"
 
                         # Set the divebomb "Land" duration timer to start counting down
-                        self.behaviour_patterns_dict["DiveBomb"]["Land"]["DurationTimer"] = self.behaviour_patterns_dict["DiveBomb"]["Land"]["Duration"]
+                        self.behaviour_patterns_dict["DurationTimer"] = self.behaviour_patterns_dict["DiveBomb"]["Land"]["Duration"]
 
                         # Set the boss to be at the landing position
                         self.rect.center = self.dive_bomb_attack_controller.landing_position
@@ -1052,7 +1052,7 @@ class GoldenMonkeyBoss(Generic, AI):
                             self.behaviour_patterns_dict["DiveBomb"]["CurrentDiveBombStage"] = "Launch"
 
                             # Set the "Launch" duration timer to start counting down
-                            self.behaviour_patterns_dict["DiveBomb"]["Launch"]["DurationTimer"] = self.behaviour_patterns_dict["DiveBomb"]["Launch"]["Duration"]
+                            self.behaviour_patterns_dict["DurationTimer"] = self.behaviour_patterns_dict["DiveBomb"]["Launch"]["Duration"]
 
                             # Increment the second phase dive bomb counter
                             self.behaviour_patterns_dict["DiveBomb"]["SecondPhaseDiveBombCounter"] += 1
@@ -1085,7 +1085,7 @@ class GoldenMonkeyBoss(Generic, AI):
                                                                                         )
     
     def run(self):
-         
+
         # Always update / move / draw the chilli projectiles
         self.chilli_projectile_controller.update_chilli_projectiles(
                                                                     delta_time = self.delta_time,
@@ -1194,7 +1194,6 @@ class GoldenMonkeyBoss(Generic, AI):
                     if hasattr(self, "second_phase_circles_dict") == True:
                         # Update and draw the second phase circles
                         self.update_and_draw_second_phase_circles(delta_time = self.delta_time)
-
 
                 # Update the duration timers
                 self.update_duration_timers()

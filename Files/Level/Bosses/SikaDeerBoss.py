@@ -86,14 +86,15 @@ class SikaDeerBoss(Generic, AI):
         # A dictionary containing information relating to the behaviour of the Sika deer boss
         self.behaviour_patterns_dict = {
 
+                                    # Duration timer
+                                    "DurationTimer": None,
+
                                     # Additional actions that the boss can perform, other than chase
 
                                     "Stomp": {
                                             # Note: Changing the number of stomps and the duration will affect how fast each wave of stomps is spawned
                                             "NumberOfStomps": 12,
                                             "Duration": 3000, 
-                                            "DurationTimer": None, # Timer used to check if the attack is over
-
                                             "Cooldown": 9000, 
                                             "CooldownTimer": 9000, # Delayed cooldown to when the boss can first use the stomp attack
 
@@ -111,7 +112,6 @@ class SikaDeerBoss(Generic, AI):
                                     # Target and charge
                                     "Target": { 
                                             "Duration": 2200,
-                                            "DurationTimer": None,
                                             "CooldownTimer": 7500,  # This will be set to be the charge cooldown after the attack has completed (Change this number if you want to delay when the boss can first charge attack)
                                             "Cooldown": 50000, # Set to random number, this will be changed once the charge attack has finished
 
@@ -124,7 +124,6 @@ class SikaDeerBoss(Generic, AI):
                                     "Charge": {
 
                                             "Duration": 2000, # The maximum duration that the boss will charge for
-                                            "DurationTimer": None,
                                             "Cooldown": 9000,
                                             "CooldownTimer": None,
                                             "FullAnimationDuration": 150,
@@ -145,7 +144,6 @@ class SikaDeerBoss(Generic, AI):
                                     # Stunned
                                     "Stunned": {
                                             "Duration": 4000,
-                                            "DurationTimer": None,
                                             "FullAnimationDuration": 1000,
                                             "StunnedDamageAmount": 350,
                                             "PlayerDamageMultiplierWhenStunned": 2
@@ -332,7 +330,7 @@ class SikaDeerBoss(Generic, AI):
     def decide_action(self):
 
         # The main "brain" of the deer boss, which will decide on what action to perform
-
+        
         match self.current_action:
 
             # Chase
@@ -356,20 +354,18 @@ class SikaDeerBoss(Generic, AI):
 
                     # Choose a random action from the possible actions the boss can perform and set it as the current action
                     self.current_action = random_choice(action_list)
-                
+
+                    # Set the duration timer to be the same as the duration of the chosen action
+                    self.behaviour_patterns_dict["DurationTimer"] = self.behaviour_patterns_dict[self.current_action]["Duration"]
+
+                    # -------------------------------------------    
+                    # Additional actions
+
                     match self.current_action:
                         
-                        # Target
-                        case "Target":
-
-                            # Set the duration timer to start counting down
-                            self.behaviour_patterns_dict["Target"]["DurationTimer"] = self.behaviour_patterns_dict["Target"]["Duration"] 
-                            
                         # Stomp
                         case "Stomp":
 
-                            # Set the duration timer to start counting down
-                            self.behaviour_patterns_dict[self.current_action]["DurationTimer"] = self.behaviour_patterns_dict["Stomp"]["Duration"]
                             # Reset the movement acceleration
                             self.reset_movement_acceleration(horizontal_reset = True, vertical_reset = True)
 
@@ -377,11 +373,11 @@ class SikaDeerBoss(Generic, AI):
             case "Stomp":
 
                 # If the stomp attack has not been completed and the stomp has already been completed for this animation index
-                if (self.behaviour_patterns_dict[self.current_action]["DurationTimer"] != None and self.behaviour_patterns_dict[self.current_action]["DurationTimer"] > 0) and \
+                if (self.behaviour_patterns_dict["DurationTimer"] != None and self.behaviour_patterns_dict["DurationTimer"] > 0) and \
                     self.stomp_controller.last_animation_index != self.animation_index:
 
                     """ If this is one of the stomp keyframes inside the boss stomp animation (except from when the stomp attack just started)"""
-                    if (self.animation_index == 0 and self.behaviour_patterns_dict[self.current_action]["DurationTimer"] != self.behaviour_patterns_dict[self.current_action]["Duration"]) \
+                    if (self.animation_index == 0 and self.behaviour_patterns_dict["DurationTimer"] != self.behaviour_patterns_dict[self.current_action]["Duration"]) \
                         or self.animation_index == 5:
                         # Start the stomp attack
                         self.stomp_attack()
@@ -400,12 +396,12 @@ class SikaDeerBoss(Generic, AI):
         if self.current_action != "Chase":
             
             # Decrease the timer
-            self.behaviour_patterns_dict[self.current_action]["DurationTimer"] -= 1000 * self.delta_time
+            self.behaviour_patterns_dict["DurationTimer"] -= 1000 * self.delta_time
             
             # If the current action's duration timer has finished counting down
-            if self.behaviour_patterns_dict[self.current_action]["DurationTimer"] <= 0:
+            if self.behaviour_patterns_dict["DurationTimer"] <= 0:
                 # Reset the duration timer back to None
-                self.behaviour_patterns_dict[self.current_action]["DurationTimer"] = None
+                self.behaviour_patterns_dict["DurationTimer"] = None
 
                 # Reset the animation index
                 self.animation_index = 0
@@ -436,7 +432,7 @@ class SikaDeerBoss(Generic, AI):
             case "Target":
 
                 # Set the "Charge" duration timer to start counting down
-                self.behaviour_patterns_dict["Charge"]["DurationTimer"] = self.behaviour_patterns_dict["Charge"]["Duration"]
+                self.behaviour_patterns_dict["DurationTimer"] = self.behaviour_patterns_dict["Charge"]["Duration"]
 
                 # Set the current charge direction (so that the boss cannot change direction whilst charging)
                 self.behaviour_patterns_dict["Charge"]["ChargeDirection"] = self.find_look_direction()
@@ -470,6 +466,10 @@ class SikaDeerBoss(Generic, AI):
                 if self.behaviour_patterns_dict["Charge"]["EnterStunnedStateBoolean"] == True:
                     # Set the current action to "Stunned"
                     self.current_action = "Stunned"
+
+                    # Set the "Stunned" duration timer to start counting down
+                    self.behaviour_patterns_dict["DurationTimer"] = self.behaviour_patterns_dict["Stunned"]["Duration"]
+
                     # Set "EnterStunnedStateBoolean" back to False
                     self.behaviour_patterns_dict["Charge"]["EnterStunnedStateBoolean"] = False
                 

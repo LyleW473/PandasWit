@@ -1563,10 +1563,7 @@ class Game:
                             self.boss_group.sprite.behaviour_patterns_dict["Charge"]["EnterStunnedStateBoolean"] = True
 
                             # Set the "Charge" duration timer to 0, to end the charge attack
-                            self.boss_group.sprite.behaviour_patterns_dict["Charge"]["DurationTimer"] = 0
-
-                            # Set the "Stunned" duration timer to start counting down
-                            self.boss_group.sprite.behaviour_patterns_dict["Stunned"]["DurationTimer"] = self.boss_group.sprite.behaviour_patterns_dict["Stunned"]["Duration"]
+                            self.boss_group.sprite.behaviour_patterns_dict["DurationTimer"] = 0
 
                             # Damage the current boss by the amount of damage dealt from being stunned
                             self.boss_group.sprite.extra_information_dict["CurrentHealth"] -= self.boss_group.sprite.behaviour_patterns_dict["Stunned"]["StunnedDamageAmount"]
@@ -1603,22 +1600,22 @@ class Game:
 
             # Only if the boss is the "SikaDeer" and the current action is "Charge"
             if self.bosses_dict["CurrentBoss"] == "SikaDeer" and self.boss_group.sprite.current_action == "Charge":
-                    # If there is an x or y world tile collision
-                    if self.boss_group.sprite.movement_information_dict["WorldTileCollisionResultsX"] == True or self.boss_group.sprite.movement_information_dict["WorldTileCollisionResultsY"] == True:
-                        # Play the sound effect for when the boss collides with a tile when charging
-                        self.play_manual_sound(sound_effect = "ChargeTileCollision")
+                # If there is an x or y world tile collision
+                if self.boss_group.sprite.movement_information_dict["WorldTileCollisionResultsX"] == True or self.boss_group.sprite.movement_information_dict["WorldTileCollisionResultsY"] == True:
+                    # Play the sound effect for when the boss collides with a tile when charging
+                    self.play_manual_sound(sound_effect = "ChargeTileCollision")
 
-                        # Set the player to change into the "Stunned" state (this will be done inside the SikaDeer class)
-                        self.boss_group.sprite.behaviour_patterns_dict["Charge"]["EnterStunnedStateBoolean"] = True
+                    # Set the player to change into the "Stunned" state (this will be done inside the SikaDeer class)
+                    self.boss_group.sprite.behaviour_patterns_dict["Charge"]["EnterStunnedStateBoolean"] = True
 
-                        # Set the "Charge" duration timer to 0, to end the charge attack
-                        self.boss_group.sprite.behaviour_patterns_dict["Charge"]["DurationTimer"] = 0
+                    # Set the "Charge" duration timer to 0, to end the charge attack
+                    self.boss_group.sprite.behaviour_patterns_dict["DurationTimer"] = 0
 
-                        # Set the "Stunned" duration timer to start counting down from half the duration (should be shorter as the player did not block them)
-                        self.boss_group.sprite.behaviour_patterns_dict["Stunned"]["DurationTimer"] = (self.boss_group.sprite.behaviour_patterns_dict["Stunned"]["Duration"] / 2)
+                    # Set the "Stunned" duration timer to start counting down from half the duration (should be shorter as the player did not block them)
+                    self.boss_group.sprite.behaviour_patterns_dict["DurationTimer"] = (self.boss_group.sprite.behaviour_patterns_dict["Stunned"]["Duration"] / 2)
 
-                        # Create a camera shake effect for when the boss collides with a tile
-                        self.camera_shake_info_dict["EventsList"].append("BossTileCollide")
+                    # Create a camera shake effect for when the boss collides with a tile
+                    self.camera_shake_info_dict["EventsList"].append("BossTileCollide")
 
             # --------------------------------------
             # Dive bomb attack circles
@@ -1627,7 +1624,7 @@ class Game:
             if self.bosses_dict["CurrentBoss"] == "GoldenMonkey" and self.boss_group.sprite.current_action == "DiveBomb":
 
                 # If the boss just landed after performing a divebomb attack
-                if self.boss_group.sprite.behaviour_patterns_dict["DiveBomb"]["Land"]["DurationTimer"] == self.boss_group.sprite.behaviour_patterns_dict["DiveBomb"]["Land"]["Duration"]:
+                if self.boss_group.sprite.behaviour_patterns_dict["DurationTimer"] == self.boss_group.sprite.behaviour_patterns_dict["DiveBomb"]["Land"]["Duration"]:
                 
                     # Create a camera shake effect for when the boss lands onto the ground
                     self.camera_shake_info_dict["EventsList"].append("DiveBomb")
@@ -1807,8 +1804,8 @@ class Game:
 
                     # If the boss is the "SikaDeer" and collided with the player whilst charge attacking
                     if self.bosses_dict["CurrentBoss"] == "SikaDeer" and self.boss_group.sprite.current_action == "Charge":
-                        # Set the "Charge" duration timer to 0 (to end the charge attack)
-                        self.boss_group.sprite.behaviour_patterns_dict["Charge"]["DurationTimer"] = 0
+                        # Set the duration timer to 0 (to end the charge attack)
+                        self.boss_group.sprite.behaviour_patterns_dict["DurationTimer"] = 0
 
                     # Set the boss to stop moving momentarily
                     self.boss_group.sprite.movement_information_dict["KnockbackCollisionIdleTimer"] = self.boss_group.sprite.movement_information_dict["KnockbackCollisionIdleTime"]
@@ -2472,7 +2469,7 @@ class Game:
                                                             )
 
                 # The new angle time gradient in relation to the current time left
-                self.boss_group.sprite.behaviour_patterns_dict["Target"]["BlinkingVisualEffectAngleTimeGradient"] = (self.boss_group.sprite.behaviour_patterns_dict["Target"]["BlinkingVisualEffectAngleChange"] - 0) / (self.boss_group.sprite.behaviour_patterns_dict["Target"]["DurationTimer"] / 1000)
+                self.boss_group.sprite.behaviour_patterns_dict["Target"]["BlinkingVisualEffectAngleTimeGradient"] = (self.boss_group.sprite.behaviour_patterns_dict["Target"]["BlinkingVisualEffectAngleChange"] - 0) / (self.boss_group.sprite.behaviour_patterns_dict["DurationTimer"] / 1000)
 
                 # Increase the current sin angle
                 self.boss_group.sprite.behaviour_patterns_dict["Target"]["BlinkingVisualEffectCurrentSinAngle"] += self.boss_group.sprite.behaviour_patterns_dict["Target"]["BlinkingVisualEffectAngleTimeGradient"] * delta_time
@@ -2483,7 +2480,7 @@ class Game:
 
                 # Adjust the current animation duration of the targeting animation according to how much time is left before the current action is set to "Charge"
                 # Note: Limit the time between frames to always be at least 20 (because very small times will result in buggy animations)
-                self.boss_group.sprite.behaviour_patterns_dict["Target"]["FullAnimationDuration"] = self.boss_group.sprite.behaviour_patterns_dict["Target"]["OriginalAnimationDuration"] * (self.boss_group.sprite.behaviour_patterns_dict["Target"]["DurationTimer"] / self.boss_group.sprite.behaviour_patterns_dict["Target"]["Duration"])
+                self.boss_group.sprite.behaviour_patterns_dict["Target"]["FullAnimationDuration"] = self.boss_group.sprite.behaviour_patterns_dict["Target"]["OriginalAnimationDuration"] * (self.boss_group.sprite.behaviour_patterns_dict["DurationTimer"] / self.boss_group.sprite.behaviour_patterns_dict["Target"]["Duration"])
                 self.boss_group.sprite.behaviour_patterns_dict["Target"]["TimeBetweenAnimFrames"] = max(
                                             self.boss_group.sprite.behaviour_patterns_dict["Target"]["FullAnimationDuration"] / self.boss_group.sprite.behaviour_patterns_dict["Target"]["AnimationListLength"],
                                             20
