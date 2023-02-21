@@ -1,16 +1,18 @@
-from sys import exit as sys_exit
+from Global.settings import screen_width, screen_height
+from Global.functions import draw_text, move_item_vertically_sin
 from Menu.button import Button
-from Global.settings import * 
+
+from sys import exit as sys_exit
+
+from pygame import Rect as pygame_Rect
+from pygame import quit as pygame_quit
 from pygame.display import get_surface as pygame_display_get_surface
 from pygame.font import Font as pygame_font_Font
 from pygame.mouse import get_pos as pygame_mouse_get_pos
 from pygame.mouse import get_pressed as pygame_mouse_get_pressed
-from pygame import Rect as pygame_Rect
-from pygame import quit as pygame_quit
 from pygame.mouse import set_visible as pygame_mouse_set_visible
 from pygame.draw import rect as pygame_draw_rect
 from pygame.image import load as pygame_image_load
-from Global.functions import draw_text, move_item_vertically_sin
 
 class Menu:
     def __init__(self):

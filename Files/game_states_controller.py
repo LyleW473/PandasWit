@@ -1,8 +1,13 @@
+from Global.settings import screen_width, screen_height
+from Menu.menu import Menu
+from Level.game import Game
+
+from sys import exit as sys_exit
+
 from pygame.display import set_mode as pygame_display_set_mode
 from pygame import SCALED as pygame_SCALED
 from pygame import FULLSCREEN as pygame_FULLSCREEN
 from pygame import HWSURFACE as pygame_HWSURFACE
-from pygame.mouse import set_visible as pygame_mouse_set_visible, get_visible as pygame_mouse_get_visible
 from pygame.event import get as pygame_event_get
 from pygame import QUIT as pygame_QUIT
 from pygame import quit as pygame_quit
@@ -13,10 +18,7 @@ from pygame import K_1 as pygame_K_1
 from pygame import K_2 as pygame_K_2
 from pygame import K_3 as pygame_K_3
 from pygame import K_SPACE as pygame_K_SPACE
-from sys import exit as sys_exit
-from Global.settings import screen_width, screen_height
-from Menu.menu import Menu
-from Level.game import Game
+from pygame.mouse import set_visible as pygame_mouse_set_visible
 from pygame.draw import rect as pygame_draw_rect
 
 class GameStatesController():

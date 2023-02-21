@@ -1,16 +1,16 @@
 from Global.settings import TILE_SIZE, screen_height, screen_width
+
 from Level.world_tile import WorldTile
 from Level.Player.player import Player
 from Level.game_ui import GameUI
 from Level.bamboo_pile import BambooPile
-from random import choice as random_choice
-from random import randrange as random_randrange
-from random import uniform as random_uniform
+
+from random import choice as random_choice, randrange as random_randrange, uniform as random_uniform
 from math import sin, cos, dist, atan2, degrees, pi
 from os import listdir as os_listdir
 
-from pygame.display import get_surface as pygame_display_get_surface
 from pygame import Surface as pygame_Surface
+from pygame.display import get_surface as pygame_display_get_surface
 from pygame.sprite import Group as pygame_sprite_Group
 from pygame.sprite import GroupSingle as pygame_sprite_GroupSingle
 from pygame.sprite import collide_mask as pygame_sprite_collide_mask
@@ -20,11 +20,11 @@ from pygame.transform import scale as pygame_transform_scale
 from pygame.transform import flip as pygame_transform_flip
 from pygame.sprite import spritecollide as pygame_sprite_spritecollide
 from pygame.sprite import collide_rect as pygame_sprite_collide_rect
-from pygame.key import get_pressed as pygame_key_get_pressed
-from pygame import K_f as pygame_K_f
 from pygame.draw import rect as pygame_draw_rect
 from pygame.draw import circle as pygame_draw_circle
 from pygame.mixer import Sound as pygame_mixer_Sound
+from pygame.key import get_pressed as pygame_key_get_pressed
+from pygame import K_f as pygame_K_f
 from pygame.mouse import get_pressed as pygame_mouse_get_pressed
 
 

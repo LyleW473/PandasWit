@@ -1,29 +1,33 @@
 from Global.generic import Generic
-from Global.settings import *
-from Level.Player.building_tile import BuildingTile
-from Level.Player.bamboo_projectiles import BambooProjectile
-from math import degrees, sin, cos, atan2, pi, dist
 from Global.functions import change_image_colour
 from Global.functions import sin_change_object_colour
+from Global.settings import TILE_SIZE, screen_height, screen_width, FULL_DEATH_ANIMATION_DURATION
+
+from Level.Player.building_tile import BuildingTile
+from Level.Player.bamboo_projectiles import BambooProjectile
+
 from os import listdir as os_list_dir
-from pygame.image import load as pygame_image_load
-from pygame.transform import flip as pygame_transform_flip
-from pygame.sprite import Sprite as pygame_sprite_Sprite
-from pygame.key import get_pressed as pygame_key_get_pressed
+from random import choice as random_choice
+from math import degrees, sin, cos, atan2, pi, dist, radians
+
 from pygame import K_w as pygame_K_w
 from pygame import K_a as pygame_K_a
 from pygame import K_s as pygame_K_s
 from pygame import K_d as pygame_K_d
 from pygame import K_r as pygame_K_r
 from pygame import K_SPACE as pygame_K_SPACE
+from pygame.key import get_pressed as pygame_key_get_pressed
+
+from pygame.image import load as pygame_image_load
+from pygame.transform import flip as pygame_transform_flip
+from pygame.sprite import Sprite as pygame_sprite_Sprite
 from pygame import Rect as pygame_Rect
 from pygame.mouse import get_pressed as pygame_mouse_get_pressed
 from pygame.mouse import get_pos as pygame_mouse_get_pos
 from pygame.draw import rect as pygame_draw_rect
 from pygame.draw import circle as pygame_draw_circle
 from pygame.mask import from_surface as pygame_mask_from_surface
-from random import choice as random_choice
-from math import radians
+
 
 
 class Player(Generic):

@@ -1,6 +1,8 @@
 from Global.generic import Generic
+from Global.settings import TILE_SIZE
+
 from math import sin, cos, degrees
-from Global.settings import *
+
 from pygame.image import load as pygame_image_load
 from pygame.transform import rotozoom as pygame_transform_rotozoom
 

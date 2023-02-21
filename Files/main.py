@@ -1,12 +1,13 @@
+from game_states_controller import GameStatesController
+
+from time import perf_counter
+
 from pygame import init as pygame_init
+from pygame.mixer import pre_init as pygame_mixer_pre_init
+from pygame.mixer import init as pygame_mixer_init
 from pygame.display import set_caption as pygame_display_set_caption
 from pygame.time import Clock as pygame_time_Clock
 from pygame.display import update as pygame_display_update
-from game_states_controller import GameStatesController
-from time import perf_counter
-from pygame.mixer import pre_init as pygame_mixer_pre_init
-from pygame.mixer import init as pygame_mixer_init
-
 
 class Main:
     def __init__(self):
@@ -19,7 +20,7 @@ class Main:
         pygame_init()
 
         # Set the caption
-        pygame_display_set_caption("A Panda's Wit")
+        pygame_display_set_caption("Panda's Wit")
         
         # Create a game states controller
         self.game_states_controller = GameStatesController()

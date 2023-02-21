@@ -1,17 +1,21 @@
 from Global.generic import Generic
 from Global.functions import change_image_colour, simple_loop_animation, simple_play_animation_once
 from Global.settings import TILE_SIZE, FULL_DEATH_ANIMATION_DURATION
+
 from Level.Bosses.BossAttacks.stomp import StompController
+from Level.Bosses.AI import AI
+
+from math import degrees, cos, sin
+from os import listdir as os_listdir
+from random import choice as random_choice
+
 from pygame import Rect as pygame_Rect
 from pygame.draw import circle as pygame_draw_circle
 from pygame.mask import from_surface as pygame_mask_from_surface
-from random import choice as random_choice
-from Level.Bosses.AI import AI
+
 from pygame.image import load as load_image
 from pygame.transform import scale as scale_image
-from os import listdir as os_listdir
 from pygame.draw import ellipse as pygame_draw_ellipse
-from math import degrees, cos, sin
 
 class SikaDeerBoss(Generic, AI):
 
@@ -90,8 +94,8 @@ class SikaDeerBoss(Generic, AI):
                                             "Duration": 3000, 
                                             "DurationTimer": None, # Timer used to check if the attack is over
 
-                                            "Cooldown": 3000, #9000, 
-                                            "CooldownTimer": 3000, #9000, # Delayed cooldown to when the boss can first use the stomp attack
+                                            "Cooldown": 9000, 
+                                            "CooldownTimer": 9000, # Delayed cooldown to when the boss can first use the stomp attack
 
                                             # The variation of the stomp for one entire stomp attack
                                             "StompAttackVariation": 0,
@@ -233,21 +237,13 @@ class SikaDeerBoss(Generic, AI):
     def play_animations(self):
 
         # -----------------------------------
-        # Set image
+        # Set the current animation image and list
 
-        # If the boss is alive
-        if self.current_action != "Death":
+        match self.current_action:
 
-            # If the current action is not "Target" and not "Charge"
-            if self.current_action != "Target" and self.current_action != "Charge":
-                # The current animation list
-                current_animation_list = SikaDeerBoss.ImagesDict[self.current_action]
-                # The current animation image
-                current_animation_image = current_animation_list[self.animation_index]
-            
-            # If the current action is "Target" or "Charge"
-            elif self.current_action == "Target" or self.current_action == "Charge":
-                
+            # Target or Charge
+            case "Target" | "Charge":
+
                 # Only do this if the current action is "Target"
                 if self.current_action == "Target":
                     # Find the player (To continuously update the look angle)
@@ -261,24 +257,34 @@ class SikaDeerBoss(Generic, AI):
 
                 # The current animation image
                 current_animation_image = current_animation_list[self.animation_index]
-            
-            # If the boss has been damaged (red and white version)
-            if self.extra_information_dict["DamagedFlashEffectTimer"] != None:
-                # Set the current animation image to be a flashed version of the current animation image (a white flash effect)
-                current_animation_image = change_image_colour(current_animation_image = current_animation_image, desired_colour = random_choice(((255, 255, 255), (255, 0, 0))))
-            
-        # If the boss is not alive
-        elif self.current_action == "Death":
-            # Set the current animation list
-            current_animation_list = self.behaviour_patterns_dict["Death"]["Images"]
 
-            # Set the current animation image
-            current_animation_image = self.behaviour_patterns_dict["Death"]["Images"][self.animation_index]
+            # Death
+            case "Death":
 
-            # If the boss has been damaged (white version)
-            if self.extra_information_dict["DamagedFlashEffectTimer"] != None:
-                # Set the current animation image to be a flashed version of the current animation image (a white flash effect)
-                current_animation_image = change_image_colour(current_animation_image = current_animation_image, desired_colour = random_choice(((255, 255, 255), (40, 40, 40))))
+                # Set the current animation list
+                current_animation_list = self.behaviour_patterns_dict["Death"]["Images"]
+
+                # Set the current animation image
+                current_animation_image = self.behaviour_patterns_dict["Death"]["Images"][self.animation_index]
+
+            # Any other action
+            case _:
+
+                # The current animation list
+                current_animation_list = SikaDeerBoss.ImagesDict[self.current_action]
+
+                # The current animation image
+                current_animation_image = current_animation_list[self.animation_index]
+
+
+        # If the boss has been damaged (red and white version)
+        if self.extra_information_dict["DamagedFlashEffectTimer"] != None:
+
+            # Red and white flash effect if the boss is alive, otherwise just the white flash effect
+            desired_colour = random_choice(((255, 255, 255), (255, 0, 0))) if self.current_action != "Death" else random_choice(((255, 255, 255), (40, 40, 40)))
+
+            # Set the current animation image to be a flashed version of the current animation image (a white flash effect)
+            current_animation_image = change_image_colour(current_animation_image = current_animation_image, desired_colour = desired_colour)
 
         # Set the image to be the current animation image
         self.image = current_animation_image
@@ -289,8 +295,8 @@ class SikaDeerBoss(Generic, AI):
         # Find which action is being performed and playing their animation 
         match self.current_action:
 
-            # Chase, Target, Stunned, Stomp
-            case _ if self.current_action == "Chase" or self.current_action == "Target" or self.current_action == "Stunned" or self.current_action == "Stomp":
+            # Chase or Targe or Stunned orStomp
+            case "Chase" | "Target" | "Stunned" | "Stomp":
 
                 # Loop the animation continuously
                 self.animation_index, self.behaviour_patterns_dict[self.current_action]["AnimationFrameTimer"] = simple_loop_animation(
@@ -299,8 +305,8 @@ class SikaDeerBoss(Generic, AI):
                                                                                                                                         animation_frame_timer = self.behaviour_patterns_dict[self.current_action]["AnimationFrameTimer"],
                                                                                                                                         time_between_anim_frames = self.behaviour_patterns_dict[self.current_action]["TimeBetweenAnimFrames"]
                                                                                                                                         )
-            # Charge, Death
-            case _ if self.current_action == "Charge" or self.current_action == "Death":
+            # Charge or Death
+            case "Charge" | "Death":
                 
                 # Play the animation once to the end
                 self.animation_index, self.behaviour_patterns_dict[self.current_action]["AnimationFrameTimer"] = simple_play_animation_once(
@@ -371,7 +377,7 @@ class SikaDeerBoss(Generic, AI):
             case "Stomp":
 
                 # If the stomp attack has not been completed and the stomp has already been completed for this animation index
-                if (self.behaviour_patterns_dict[self.current_action]["DurationTimer"] != None and self.behaviour_patterns_dict[self.current_action]["DurationTimer"] > 0 ) and \
+                if (self.behaviour_patterns_dict[self.current_action]["DurationTimer"] != None and self.behaviour_patterns_dict[self.current_action]["DurationTimer"] > 0) and \
                     self.stomp_controller.last_animation_index != self.animation_index:
 
                     """ If this is one of the stomp keyframes inside the boss stomp animation (except from when the stomp attack just started)"""
@@ -384,7 +390,6 @@ class SikaDeerBoss(Generic, AI):
             case "Charge":
                 # Perform the charge attack 
                 self.charge_attack()
-
 
     def update_duration_timers(self):
 

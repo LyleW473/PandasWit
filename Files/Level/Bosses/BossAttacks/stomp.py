@@ -1,11 +1,13 @@
-from Global.generic import Generic
+from Global.settings import TILE_SIZE
+
+from math import pi, cos, sin, radians, degrees
+from random import randrange as random_randrange
+
 from pygame.sprite import Sprite as pygame_sprite_Sprite
 from pygame import Rect as pygame_Rect
-from math import pi, cos, sin, radians, degrees
-from Global.settings import TILE_SIZE
 from pygame.image import load as load_image
 from pygame.transform import scale as scale_image
-from random import randrange as random_randrange
+
 
 class StompController:
 

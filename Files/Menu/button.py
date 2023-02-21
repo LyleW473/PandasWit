@@ -1,6 +1,8 @@
 from Global.settings import * 
 from Global.functions import draw_text
+
 from random import randrange as random_randrange
+
 from pygame import Rect as pygame_Rect
 from pygame import Surface as pygame_Surface
 from pygame.draw import circle as pygame_draw_circle

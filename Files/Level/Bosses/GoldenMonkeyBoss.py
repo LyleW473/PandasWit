@@ -1,20 +1,23 @@
 from Global.generic import Generic
 from Global.settings import TILE_SIZE, FULL_DEATH_ANIMATION_DURATION
 from Global.functions import change_image_colour, change_image_colour_v2, sin_change_object_colour, update_generic_timer, simple_loop_animation, simple_play_animation_once
+
 from random import choice as random_choice
-from pygame.mask import from_surface as pygame_mask_from_surface
-from pygame.image import load as load_image
-from pygame.transform import scale as scale_image
+from math import sin, cos, radians
 from os import listdir as os_listdir
+
 from Level.Bosses.AI import AI
 from Level.Bosses.BossAttacks.chilli_attacks import ChilliProjectileController
 from Level.Bosses.BossAttacks.dive_bomb_attack import DiveBombAttackController
-from math import sin, cos, radians
-from pygame.font import Font as pygame_font_Font
 from Level.effect_text import EffectText
+
+from pygame.font import Font as pygame_font_Font
 from pygame import Surface as pygame_Surface
 from pygame.draw import circle as pygame_draw_circle
 from pygame.draw import ellipse as pygame_draw_ellipse
+from pygame.mask import from_surface as pygame_mask_from_surface
+from pygame.image import load as load_image
+from pygame.transform import scale as scale_image
 
 
 class GoldenMonkeyBoss(Generic, AI):
@@ -315,12 +318,11 @@ class GoldenMonkeyBoss(Generic, AI):
         # --------------------------------------------------------
         # Set the current animation image and change the colour if there are any effects
 
-        # If the boss is alive
-        if self.current_action != "Death":
+        match self.current_action:
 
-            # If the current action is "Chase"
-            if self.current_action == "Chase":
-                
+            # Chase
+            case "Chase":
+
                 # The current direction the monkey is facing
                 current_direction = self.find_look_direction()
 
@@ -330,18 +332,18 @@ class GoldenMonkeyBoss(Generic, AI):
                 # The current animation image
                 current_animation_image = current_animation_list[self.animation_index]
 
-            # If the current action is "SpiralAttack" or "Sleep"
-            elif self.current_action == "SpiralAttack" or self.current_action == "Sleep":
-                
+            # SpiralAttack, Sleep
+            case "SpiralAttack" | "Sleep":
+
                 # The current animation list
                 current_animation_list = GoldenMonkeyBoss.ImagesDict[self.current_action]
 
                 # The current animation image
                 current_animation_image = current_animation_list[self.animation_index]
 
-            # If the current action is "DiveBomb"
-            elif self.current_action == "DiveBomb":
-                
+            # DiveBomb
+            case "DiveBomb":
+
                 # If the current divebomb stage is not "Target"
                 if self.behaviour_patterns_dict["DiveBomb"]["CurrentDiveBombStage"] != "Target":
                     # The current animation list (e.g. ["DiveBomb"]["Land"])
@@ -355,36 +357,34 @@ class GoldenMonkeyBoss(Generic, AI):
                     current_animation_list = GoldenMonkeyBoss.ImagesDict[self.current_action]["Land"]
                     current_animation_image = GoldenMonkeyBoss.ImagesDict[self.current_action]["Land"][0]
 
-            # If the boss is in its second phase
-            if self.current_phase == 2:
+            # Death
+            case "Death":
 
-                # Change the colour of the boss to be its second phase colour
-                current_animation_image = change_image_colour(current_animation_image = current_animation_image, desired_colour = self.second_phase_colour_current_colour)
-                
-            # If the boss has been damaged (red and white version)
-            if self.extra_information_dict["DamagedFlashEffectTimer"] != None:
-                
-                # Reduce the colour of the image all the way down to black
-                """Note: This is because yellow is made up of red and green, so the colours must be reduced all the way down first to actually see the red (otherwise the only colour visible would be white
-                and the default colours)
-                """
-                current_animation_image = change_image_colour_v2(current_animation_image = current_animation_image, desired_colour = (0, 0, 0))
+                # Set the current animation list
+                current_animation_list = self.behaviour_patterns_dict["Death"]["Images"]
 
-                # Set the current animation image to be a flashed version of the current animation image (a white flash effect)
-                current_animation_image = change_image_colour(current_animation_image = current_animation_image, desired_colour = random_choice(((255, 255, 255), (255, 0, 0))))
+                # Set the current animation image
+                current_animation_image = self.behaviour_patterns_dict["Death"]["Images"][self.animation_index]
 
-        # If the boss is not alive
-        elif self.current_action == "Death":
-            # Set the current animation list
-            current_animation_list = self.behaviour_patterns_dict["Death"]["Images"]
+        # If the boss is in its second phase
+        if self.current_phase == 2 and self.current_action != "Death":
+            # Change the colour of the boss to be its second phase colour
+            current_animation_image = change_image_colour(current_animation_image = current_animation_image, desired_colour = self.second_phase_colour_current_colour)
+            
+        # If the boss has been damaged (red and white version)
+        if self.extra_information_dict["DamagedFlashEffectTimer"] != None:
+            
+            # Red and white flash effect if the boss is alive, otherwise just the white flash effect
+            desired_colour = random_choice(((255, 255, 255), (255, 0, 0))) if self.current_action != "Death" else random_choice(((255, 255, 255), (40, 40, 40)))
+            
+            # Reduce the colour of the image all the way down to black if the player is alive
+            """Note: This is because yellow is made up of red and green, so the colours must be reduced all the way down first to actually see the red (otherwise the only colour visible would be white
+            and the default colours)
+            """
+            current_animation_image = change_image_colour_v2(current_animation_image = current_animation_image, desired_colour = (0, 0, 0)) if self.current_action != "Death" else current_animation_image
 
-            # Set the current animation image
-            current_animation_image = self.behaviour_patterns_dict["Death"]["Images"][self.animation_index]
-
-            # If the boss has been damaged (white version)
-            if self.extra_information_dict["DamagedFlashEffectTimer"] != None:
-                # Set the current animation image to be a flashed version of the current animation image (a white flash effect)
-                current_animation_image = change_image_colour(current_animation_image = current_animation_image, desired_colour = random_choice(((255, 255, 255), (40, 40, 40))))
+            # Set the current animation image to be a flashed version of the current animation image (a white flash effect)
+            current_animation_image = change_image_colour(current_animation_image = current_animation_image, desired_colour = desired_colour)
                 
         # Set the image to be the current animation image
         self.image = current_animation_image
@@ -395,8 +395,8 @@ class GoldenMonkeyBoss(Generic, AI):
         # Find which action is being performed and update the animation index based on that
         match self.current_action:
 
-            # Chase, SpiralAttack, Sleep
-            case _ if self.current_action == "Chase" or self.current_action == "SpiralAttack" or self.current_action == "Sleep":
+            # Chase or SpiralAttack or Sleep
+            case "Chase" | "SpiralAttack" | "Sleep":
 
                 # Loop the animation continuously
                 self.animation_index, self.behaviour_patterns_dict[self.current_action]["AnimationFrameTimer"] = simple_loop_animation(
@@ -407,7 +407,7 @@ class GoldenMonkeyBoss(Generic, AI):
                                                                                                                                         )
 
             # Death
-            case _ if self.current_action == "Death":
+            case "Death":
                 
                 # Play the animation once to the end
                 self.animation_index, self.behaviour_patterns_dict[self.current_action]["AnimationFrameTimer"] = simple_play_animation_once(
@@ -417,8 +417,8 @@ class GoldenMonkeyBoss(Generic, AI):
                                                                                                                                             time_between_anim_frames = self.behaviour_patterns_dict[self.current_action]["TimeBetweenAnimFrames"]
                                                                                                                                             )
 
-            # Divebomb
-            case _ if self.current_action == "DiveBomb":
+            # DiveBomb
+            case "DiveBomb":
 
                 # Current divebomb stage
                 current_stage = self.behaviour_patterns_dict["DiveBomb"]["CurrentDiveBombStage"]

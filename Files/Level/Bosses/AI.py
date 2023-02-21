@@ -1,5 +1,7 @@
-from math import atan2, pi, cos, dist, sin, degrees
 from Global.functions import update_generic_timer
+
+from math import atan2, pi, cos, dist, sin, degrees
+
 from pygame import Rect as pygame_Rect
 
 

@@ -1,9 +1,11 @@
+from Global.functions import draw_text
+from Global.settings import BAR_ALPHA_LEVEL
+
 from pygame.draw import rect as pygame_draw_rect
 from pygame.draw import line as pygame_draw_line
 from pygame import Rect as pygame_Rect
-from Global.functions import draw_text
 from pygame import Surface as pygame_Surface
-from Global.settings import BAR_ALPHA_LEVEL
+
 
 class DisplayCard:
     

@@ -1,7 +1,8 @@
+from math import sin, radians
+
 from pygame.transform import smoothscale
 from pygame import Surface as pygame_Surface
 from pygame import BLEND_RGB_ADD as pygame_BLEND_RGB_ADD
-from math import sin, radians
 
 def draw_text(text, text_colour, font, x, y, surface, scale_multiplier = None):
 

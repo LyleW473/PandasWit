@@ -1,6 +1,8 @@
 from Global.generic import Generic
-from math import sin, cos, degrees, radians
 from Global.settings import *
+
+from math import sin, cos, degrees, radians
+
 from pygame.image import load as pygame_image_load
 from pygame.transform import rotozoom as pygame_transform_rotozoom
 

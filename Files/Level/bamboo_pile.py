@@ -1,5 +1,6 @@
 from Global.generic import Generic
 from Global.settings import TILE_SIZE
+
 from pygame.image import load as pygame_image_load
 
 class BambooPile(Generic):

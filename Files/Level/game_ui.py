@@ -1,16 +1,16 @@
+from Global.settings import TILE_SIZE, BAR_ALPHA_LEVEL
+from Global.functions import draw_text, sin_change_object_colour, move_item_vertically_sin
+from Level.display_card import DisplayCard
+from Level.effect_text import EffectText
+
+from random import randrange as random_randrange
+from math import degrees
+
 from pygame import Rect as pygame_Rect
 from pygame import Surface as pygame_Surface
 from pygame.font import Font as pygame_font_Font
 from pygame.draw import rect as pygame_draw_rect
 from pygame.draw import line as pygame_draw_line
-from pygame.image import load as load_image
-from Level.display_card import DisplayCard
-from Global.settings import TILE_SIZE, BAR_ALPHA_LEVEL
-from Global.functions import draw_text, sin_change_object_colour, move_item_vertically_sin
-from pygame import Surface as pygame_Surface
-from Level.effect_text import EffectText
-from random import randrange as random_randrange
-from math import degrees
 from pygame.image import load as pygame_image_load
 
 
@@ -104,7 +104,7 @@ class GameUI:
 
         # A dictionary containing the images for the player stats
         self.stats_images_dict = {
-                        "BambooResource": load_image("graphics/Misc/BambooResource.png").convert_alpha(),
+                        "BambooResource": pygame_image_load("graphics/Misc/BambooResource.png").convert_alpha(),
                         "BuildingTiles": self.player_tools["BuildingTool"]["Images"]["TileImage"]
                                  }
 
@@ -183,7 +183,7 @@ class GameUI:
 
         # ------------------------------------------------------------
         # Cursor image
-        self.default_cursor_image = load_image("graphics/Cursors/Default.png").convert_alpha()
+        self.default_cursor_image = pygame_image_load("graphics/Cursors/Default.png").convert_alpha()
     
         """ 'Hidden' attributes:
 

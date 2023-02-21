@@ -1,9 +1,12 @@
 from Global.generic import Generic
+
+from math import sin, radians
+
 from pygame.image import load as pygame_image_load
 from pygame.transform import scale as pygame_transform_scale
 from pygame.mask import from_surface as pygame_mask_from_surface
 from pygame import Surface as pygame_Surface
-from math import sin, radians
+
 
 class DiveBombAttackController(Generic):
 
