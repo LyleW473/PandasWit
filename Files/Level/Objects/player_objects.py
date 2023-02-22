@@ -1,4 +1,4 @@
-from Level.world_tile import WorldTile
+from Level.Objects.world_objects import WorldTile
 
 class BuildingTile(WorldTile):
 

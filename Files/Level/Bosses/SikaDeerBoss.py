@@ -2,7 +2,7 @@ from Global.generic import Generic
 from Global.functions import change_image_colour, simple_loop_animation, simple_play_animation_once
 from Global.settings import TILE_SIZE, FULL_DEATH_ANIMATION_DURATION
 
-from Level.Bosses.BossAttacks.stomp import StompController
+from Level.Objects.projectiles import StompController
 from Level.Bosses.AI import AI
 
 from math import degrees, cos, sin

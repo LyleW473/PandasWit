@@ -1,4 +1,3 @@
-from Global.settings import * 
 from Global.functions import draw_text
 
 from random import randrange as random_randrange

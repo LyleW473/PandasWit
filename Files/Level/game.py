@@ -1,9 +1,9 @@
 from Global.settings import TILE_SIZE, screen_height, screen_width
 
-from Level.world_tile import WorldTile
 from Level.Player.player import Player
 from Level.game_ui import GameUI
-from Level.bamboo_pile import BambooPile
+from Level.Objects.world_objects import BambooPile
+from Level.Objects.world_objects import WorldTile
 
 from random import choice as random_choice, randrange as random_randrange, uniform as random_uniform
 from math import sin, cos, dist, atan2, degrees, pi
@@ -2319,7 +2319,7 @@ class Game:
                 # Preparing groups 
 
                 # Create a sprite group for the stomp attacks nodes created by the Sika Deer boss
-                from Level.Bosses.BossAttacks.stomp import StompController
+                from Level.Objects.projectiles import StompController
                 self.stomp_attack_nodes_group = pygame_sprite_Group()
                 StompController.nodes_group = self.stomp_attack_nodes_group
 
@@ -2384,7 +2384,7 @@ class Game:
                 # Preparing groups 
 
                 # Create a dict for the chilli projectiles created by the Golden Monkey boss
-                from Level.Bosses.BossAttacks.chilli_attacks import ChilliProjectileController
+                from Level.Objects.projectiles import ChilliProjectileController
                 self.chilli_projectiles_dict = {}
                 ChilliProjectileController.projectiles_dict = self.chilli_projectiles_dict
 

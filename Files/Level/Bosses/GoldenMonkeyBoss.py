@@ -7,8 +7,8 @@ from math import sin, cos, radians
 from os import listdir as os_listdir
 
 from Level.Bosses.AI import AI
-from Level.Bosses.BossAttacks.chilli_attacks import ChilliProjectileController
-from Level.Bosses.BossAttacks.dive_bomb_attack import DiveBombAttackController
+from Level.Objects.projectiles import ChilliProjectileController
+from Level.Objects.projectiles import DiveBombAttackController
 from Level.effect_text import EffectText
 
 from pygame.font import Font as pygame_font_Font

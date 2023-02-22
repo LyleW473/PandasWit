@@ -3,8 +3,8 @@ from Global.functions import change_image_colour
 from Global.functions import sin_change_object_colour
 from Global.settings import TILE_SIZE, screen_height, screen_width, FULL_DEATH_ANIMATION_DURATION
 
-from Level.Player.building_tile import BuildingTile
-from Level.Player.bamboo_projectiles import BambooProjectile
+from Level.Objects.player_objects import BuildingTile
+from Level.Objects.projectiles import BambooProjectile
 
 from os import listdir as os_list_dir
 from random import choice as random_choice
