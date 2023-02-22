@@ -2083,7 +2083,9 @@ class Player(Generic):
                                                                     angle = self.look_angle,
                                                                     damage_amount = current_weapon_dict["WeaponDamage"],
                                                                     is_frenzy_mode_projectile = False,
-                                                                    is_bamboo_launcher_projectile = is_bamboo_launcher_projectile
+                                                                    is_bamboo_launcher_projectile = is_bamboo_launcher_projectile,
+                                                                     # Add the bamboo projectile to the bamboo projectiles group
+                                                                    projectile_dict = self.sprite_groups["BambooProjectiles"]
                                                                     )
                             
                             # If frenzy mode is activated when shooting:
@@ -2095,12 +2097,11 @@ class Player(Generic):
                                                                     angle = self.look_angle,
                                                                     damage_amount = current_weapon_dict["WeaponDamage"],
                                                                     is_frenzy_mode_projectile = True,
-                                                                    is_bamboo_launcher_projectile = is_bamboo_launcher_projectile
+                                                                    is_bamboo_launcher_projectile = is_bamboo_launcher_projectile,
+                                                                     # Add the bamboo projectile to the bamboo projectiles group
+                                                                    projectile_dict = self.sprite_groups["BambooProjectiles"]
                                                                     )
-                                
-                        
-                            # Add the bamboo projectile to the bamboo projectiles group
-                            self.sprite_groups["BambooProjectiles"].add(bamboo_projectile)
+                            
 
                             # Set the shooting cooldown timer to the shooting cooldown set
                             current_weapon_dict["ShootingCooldownTimer"] = current_weapon_dict["ShootingCooldown"]
@@ -2125,16 +2126,15 @@ class Player(Generic):
             offset_distance_y = -(15 * sin(radians(i * (360 / self.tools["BambooLauncher"]["NumberOfMiniProjectiles"])))) # "-" because pygame's y-axis is flipped
             
             # Create a new projectile with the damage of the mini projectiles damage under the bamboo launcher's dictionary
-            bamboo_projectile = BambooProjectile(
-                                                x = projectile.rect.centerx + offset_distance_x,
-                                                y = projectile.rect.centery + offset_distance_y,
-                                                angle = radians(i * (360 / self.tools["BambooLauncher"]["NumberOfMiniProjectiles"])),
-                                                damage_amount = self.tools["BambooLauncher"]["MiniProjectilesDamage"],
-                                                is_frenzy_mode_projectile = projectile.is_frenzy_mode_projectile,
-                                                is_bamboo_launcher_projectile = False # Make this a normal bamboo projectile
-                                                )
-            # Add the bamboo projectile to the bamboo projectiles group
-            self.sprite_groups["BambooProjectiles"].add(bamboo_projectile)
+            _ = BambooProjectile(
+                                x = projectile.rect.centerx + offset_distance_x,
+                                y = projectile.rect.centery + offset_distance_y,
+                                angle = radians(i * (360 / self.tools["BambooLauncher"]["NumberOfMiniProjectiles"])),
+                                damage_amount = self.tools["BambooLauncher"]["MiniProjectilesDamage"],
+                                is_frenzy_mode_projectile = projectile.is_frenzy_mode_projectile,
+                                is_bamboo_launcher_projectile = False, # Make this a normal bamboo projectile
+                                projectile_dict = self.sprite_groups["BambooProjectiles"]
+                                )
 
     def update_bamboo_projectiles(self):
 
