@@ -317,7 +317,6 @@ class DiveBombAttackController(Generic):
             self.shockwave_circle_alpha_surface.set_alpha(self.shockwave_circle_alpha_level)
             self.shockwave_circle_current_radius = self.shockwave_circle_minimum_radius
 
-
 class DefaultProjectile(Generic):
 
     """Note: 
@@ -497,7 +496,6 @@ class ChilliProjectile(DefaultProjectile):
                                     desired_distance_travelled = ChilliProjectile.desired_distance_travelled,
                                     projectile_image = self.original_image
                                     )
-
 
 class StompNode(pygame_sprite_Sprite):
 
