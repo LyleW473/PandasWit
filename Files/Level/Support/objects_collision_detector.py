@@ -669,7 +669,7 @@ class ObjectCollisionDetector:
         if self.game.boss_group.sprite.behaviour_patterns_dict["DurationTimer"] == self.game.boss_group.sprite.behaviour_patterns_dict["DiveBomb"]["Land"]["Duration"]:
         
             # Create a camera shake effect for when the boss lands onto the ground
-            self.game.camera_shake_info_dict["EventsList"].append("DiveBomb")
+            self.game.camera.camera_shake_info_dict["EventsList"].append("DiveBomb")
 
             # Play the dive bomb sound effect
             self.game.play_manual_sound(sound_effect = "DiveBomb")
@@ -801,7 +801,7 @@ class ObjectCollisionDetector:
             self.game.boss_group.sprite.behaviour_patterns_dict["DurationTimer"] = (self.game.boss_group.sprite.behaviour_patterns_dict["Stunned"]["Duration"] / 2)
 
             # Create a camera shake effect for when the boss collides with a tile
-            self.game.camera_shake_info_dict["EventsList"].append("BossTileCollide")
+            self.game.camera.camera_shake_info_dict["EventsList"].append("BossTileCollide")
 
     def handle_boss_collisions(self):
 
@@ -911,7 +911,7 @@ class ObjectCollisionDetector:
                                                                 )
                                         
                             # Create a camera shake effect for when the boss collides with a tile
-                            self.game.camera_shake_info_dict["EventsList"].append("BossTileCollide")
+                            self.game.camera.camera_shake_info_dict["EventsList"].append("BossTileCollide")
 
             # --------------------------------------
             # World tiles while charging
