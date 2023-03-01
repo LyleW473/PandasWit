@@ -65,7 +65,7 @@ class Player(Generic):
         """
         self.camera_position = None # Position of the camera. This is updated inside "Game" class
         self.last_tile_position = None # Position of the last tile that the player can be on. This will be updated by "Game" when the level is created
-        self.boss_rect = None # Reference to the current boss' rect, updated by the "Game" when a boss has been spawned
+        self.current_boss = None # Reference to the current boss , updated by the "Game" when a boss has been spawned
         """
         self.neighbouring_tiles_dict = {} # Used to hold the neighbouring tiles near the player (i.e. within 1 tile of the player, horizontally and vertically)
         self.dx = 0 # The distance the player can move based on if there were any collisions
@@ -262,7 +262,7 @@ class Player(Generic):
         self.player_gameplay_info_dict["CurrentHealth"] = self.player_gameplay_info_dict["MaximumHealth"]
 
         # Reset boss rect back to None, so that the player does not lose bamboo when shooting or building before a boss has been spawned
-        self.boss_rect = None
+        self.current_boss = None
         
         # -----------------------------------------------------------------------------------------
         # Movement
@@ -1951,9 +1951,9 @@ class Player(Generic):
                             """
                             # If there is no current boss or there is a current boss and the player's mouse is not colliding with the rect of the boss or
                             # Note: This is so that the player can't build tiles right on top of the boss (Drains resource very quickly)
-                            if hasattr(self, "boss_rect") == False or \
-                                self.boss_rect == None or \
-                                    (hasattr(self, "boss_rect") == True and self.mouse_rect.colliderect(self.boss_rect) == False):
+                            if hasattr(self, "current_boss") == False or \
+                                self.current_boss == None or \
+                                    (hasattr(self, "current_boss") == True and self.mouse_rect.colliderect(self.current_boss.rect) == False):
 
                                 # Create a building tile
                                 building_tile = BuildingTile(x = empty_tile.rect.x, y = empty_tile.rect.y, image = self.tools["BuildingTool"]["Images"]["TileImage"])
@@ -1975,7 +1975,7 @@ class Player(Generic):
 
                                 # If a boss has been spawned and the boss rect is not set to None
                                 # Note: Second check is so that when the current boss dies, the boss rect can be set to None, until the next boss is spawned
-                                if hasattr(self, "boss_rect") == True and self.boss_rect != None:
+                                if hasattr(self, "current_boss") == True and self.current_boss != None:
                                     # Remove bamboo resource by the depletion amount set
                                     self.player_gameplay_info_dict["AmountOfBambooResource"] -= self.tools["BuildingTool"]["BambooResourceDepletionAmount"]
 
@@ -2110,7 +2110,7 @@ class Player(Generic):
                             if self.player_gameplay_info_dict["FrenzyModeTimer"] == None:
                                 # If a boss has been spawned and the boss rect is not set to None
                                 # Note: Second check is so that when the current boss dies, the boss rect can be set to None, until the next boss is spawned
-                                if hasattr(self, "boss_rect") == True and self.boss_rect != None:
+                                if hasattr(self, "current_boss") == True and self.current_boss != None:
                                     # Remove the amount of bamboo resource set for the weapon 
                                     self.player_gameplay_info_dict["AmountOfBambooResource"] -= current_weapon_dict["BambooResourceDepletionAmount"]
 

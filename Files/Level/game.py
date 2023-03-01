@@ -17,7 +17,6 @@ from pygame.display import get_surface as pygame_display_get_surface
 from pygame.sprite import Group as pygame_sprite_Group
 from pygame.sprite import GroupSingle as pygame_sprite_GroupSingle
 from pygame.image import load as pygame_image_load
-from pygame.transform import smoothscale as pygame_transform_smoothscale
 from pygame.transform import scale as pygame_transform_scale
 from pygame.mixer import Sound as pygame_mixer_Sound
 from pygame.mouse import get_pressed as pygame_mouse_get_pressed
@@ -601,8 +600,29 @@ class Game:
             # Update the current boss with the current position of the player (Used for finding the angle between the boss and the player)
             self.boss_group.sprite.players_position = self.player.rect.center
 
-            # Update the player with the rect information of the current boss (Used for limiting building placement if the player is building on top of the boss)
-            self.player.boss_rect = self.boss_group.sprite.rect
+            # Update the player with the reference of the current boss (Used for limiting building placement if the player is building on top of the boss)
+            """ Checks:
+            - If there is no current boss
+            - If there is a current boss and they are alive (and that the player's reference is not the same as the current boss, so it is not updated constantly)
+            """
+            if hasattr(self.player, "current_boss") == False or \
+                (hasattr(self.player, "current_boss") == True and self.player.current_boss != self.boss_group.sprite) and self.boss_group.sprite.extra_information_dict["CurrentHealth"] > 0:
+                self.player.current_boss = self.boss_group.sprite
+            
+            # If the current boss has just died
+            elif hasattr(self.player, "current_boss") == True and self.boss_group.sprite.extra_information_dict["CurrentHealth"] <= 0:
+
+                # Reset the player's health and bamboo resource back to maximum
+
+                if self.player.player_gameplay_info_dict["CurrentHealth"] != self.player.player_gameplay_info_dict["MaximumHealth"]:
+                    self.player.player_gameplay_info_dict["CurrentHealth"] = self.player.player_gameplay_info_dict["MaximumHealth"]
+                
+                if self.player.player_gameplay_info_dict["AmountOfBambooResource"] != self.player.player_gameplay_info_dict["MaximumAmountOfBambooResource"]:
+                    self.player.player_gameplay_info_dict["AmountOfBambooResource"] = self.player.player_gameplay_info_dict["MaximumAmountOfBambooResource"]
+
+                # Set the player's reference to the current boss to be None, so that they do not lose bamboo resource
+                if self.player.current_boss != None:
+                    self.player.current_boss = None
 
             # Run the boss
             self.boss_group.sprite.run()
@@ -757,6 +777,8 @@ class Game:
         if hasattr(self.boss_spawner, "bosses_dict") and len(self.boss_spawner.bosses_dict["RemainingBossesList"]) == 0 and self.boss_group.sprite.extra_information_dict["CurrentHealth"] <= 0:
              # If the game completion text has not been shown yet
             if self.game_ui.guide_text_dict["AllGuideTextMessages"]["GameCompletion"][1] == False:
+                # Empty the guide text list, so that no other guide text is shown
+                self.game_ui.guide_text_list = []
                 # Add the text to the guide text list
                 self.game_ui.guide_text_list.append(self.game_ui.guide_text_dict["AllGuideTextMessages"]["GameCompletion"][0])
                 # Set the text as shown
@@ -1247,6 +1269,7 @@ class Game:
             elif self.boss_group.sprite != None and self.boss_group.sprite.extra_information_dict["CurrentHealth"] <= 0:
 
                 """ Draws the player over the skull """
+
 
                 # Draw all tiles
                 self.draw_tiles()
