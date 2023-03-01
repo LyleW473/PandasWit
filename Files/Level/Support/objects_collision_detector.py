@@ -82,7 +82,7 @@ class ObjectCollisionDetector:
                             randomised_damage_amount =  random_randrange(-3, 3)
 
                             # If the current boss is the "SikaDeer"
-                            if self.game.bosses_dict["CurrentBoss"] == "SikaDeer":
+                            if self.game.boss_spawner.bosses_dict["CurrentBoss"] == "SikaDeer":
                                 # If the deer boss is stunned
                                 if self.game.boss_group.sprite.current_action == "Stunned":
                                     # Increase the base damage of the bamboo projectile by the damage multiplier dealt to the deer boss when stunned, plus a random damage amount
@@ -94,7 +94,7 @@ class ObjectCollisionDetector:
                                     total_damage_dealt = bamboo_projectile.damage_amount + randomised_damage_amount
 
                             # If the current boss is the "GoldenMonkey"
-                            elif self.game.bosses_dict["CurrentBoss"] == "GoldenMonkey":
+                            elif self.game.boss_spawner.bosses_dict["CurrentBoss"] == "GoldenMonkey":
                                 # If the golden monkey boss is currently sleeping
                                 if self.game.boss_group.sprite.current_action == "Sleep":
                                     # Increase the base damage of the bamboo projectile by the damage multiplier dealt to the deer boss when stunned, plus a random damage amount
@@ -869,7 +869,7 @@ class ObjectCollisionDetector:
                             self.game.play_manual_sound(sound_effect = "BossTileSmallCollision")
 
                         # If the boss is the "SikaDeer" and collided with the player whilst charge attacking
-                        elif self.game.bosses_dict["CurrentBoss"] == "SikaDeer" and self.game.boss_group.sprite.current_action == "Charge":
+                        elif self.game.boss_spawner.bosses_dict["CurrentBoss"] == "SikaDeer" and self.game.boss_group.sprite.current_action == "Charge":
 
                             # Play the sound effect for when the boss collides with a tile when charging
                             self.game.play_manual_sound(sound_effect = "ChargeTileCollision")
@@ -917,14 +917,14 @@ class ObjectCollisionDetector:
             # World tiles while charging
 
             # Only if the boss is the "SikaDeer" and the current action is "Charge"
-            if self.game.bosses_dict["CurrentBoss"] == "SikaDeer" and self.game.boss_group.sprite.current_action == "Charge":
+            if self.game.boss_spawner.bosses_dict["CurrentBoss"] == "SikaDeer" and self.game.boss_group.sprite.current_action == "Charge":
                 self.handle_charge_attack_collisions()
 
             # --------------------------------------
             # Dive bomb attack circles
 
             # Only if the boss is the "SikaDeer" and the current action is "DiveBomb"
-            if self.game.bosses_dict["CurrentBoss"] == "GoldenMonkey" and self.game.boss_group.sprite.current_action == "DiveBomb":
+            if self.game.boss_spawner.bosses_dict["CurrentBoss"] == "GoldenMonkey" and self.game.boss_group.sprite.current_action == "DiveBomb":
                 self.handle_dive_bomb_attack_circles_collisions()
 
             # --------------------------------------
@@ -988,7 +988,7 @@ class ObjectCollisionDetector:
                     self.game.play_manual_sound(sound_effect = "PlayerHurt")
 
                     # If the boss is the "SikaDeer" and collided with the player whilst charge attacking
-                    if self.game.bosses_dict["CurrentBoss"] == "SikaDeer" and self.game.boss_group.sprite.current_action == "Charge":
+                    if self.game.boss_spawner.bosses_dict["CurrentBoss"] == "SikaDeer" and self.game.boss_group.sprite.current_action == "Charge":
                         # Set the duration timer to 0 (to end the charge attack)
                         self.game.boss_group.sprite.behaviour_patterns_dict["DurationTimer"] = 0
 

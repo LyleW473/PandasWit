@@ -177,7 +177,7 @@ class Camera:
                 # -------------------------------------
                 # If the boss has finished spawning and and the camera has finished panning to the boss but still needs to lock in for a short period of time
 
-                if self.game.bosses_dict["TimeToSpawnTimer"] == None and self.camera_pan_information_dict["BossPanLockTimer"] == None and self.camera_pan_information_dict["PlayerPanLockTimer"] == None:
+                if self.game.boss_spawner.bosses_dict["TimeToSpawnTimer"] == None and self.camera_pan_information_dict["BossPanLockTimer"] == None and self.camera_pan_information_dict["PlayerPanLockTimer"] == None:
                     # Set the boss pan lock timer to start
                     self.camera_pan_information_dict["BossPanLockTimer"] = self.camera_pan_information_dict["BossPanLockTime"]
 
@@ -283,12 +283,12 @@ class Camera:
     def update_focus_subject(self):
         
         # If a boss has not been created or if a boss has been created and has been spawned and the player is currently alive
-        if (hasattr(self.game, "bosses_dict") == False or (hasattr(self.game, "bosses_dict") == True and self.game.bosses_dict["TimeToSpawnTimer"] == None)) and self.game.player.player_gameplay_info_dict["CurrentHealth"] > 0:
+        if (hasattr(self.game.boss_spawner, "bosses_dict") == False or (hasattr(self.game.boss_spawner, "bosses_dict") == True and self.game.boss_spawner.bosses_dict["TimeToSpawnTimer"] == None)) and self.game.player.player_gameplay_info_dict["CurrentHealth"] > 0:
             # Return the center of the player (so that the camera follows the player)
             return (self.game.player.rect.centerx,  self.game.player.rect.centery)
 
         # If a boss has been created and is currently being spawned and the player is alive
-        elif (hasattr(self.game, "bosses_dict") == True and self.game.bosses_dict["TimeToSpawnTimer"] != None) and self.mode != "Pan" and self.game.player.player_gameplay_info_dict["CurrentHealth"] > 0:
+        elif (hasattr(self.game.boss_spawner, "bosses_dict") == True and self.game.boss_spawner.bosses_dict["TimeToSpawnTimer"] != None) and self.mode != "Pan" and self.game.player.player_gameplay_info_dict["CurrentHealth"] > 0:
 
             # Set the camera mode as "Pan"
             self.set_mode(manual_camera_mode_setting = "Pan")
@@ -298,8 +298,8 @@ class Camera:
             
             # Calculate the horizontal and vertical distance time gradients for the panning movement
             # Note: TILE_SIZE / 2 so that the center of the camera is aligned with the center of the spawning tile
-            self.camera_pan_information_dict["PanHorizontalDistanceTimeGradient"] = (self.game.bosses_dict["ValidSpawningPosition"].rect.centerx - middle_camera_position[0]) / (self.camera_pan_information_dict["PanTime"] / 1000)
-            self.camera_pan_information_dict["PanVerticalDistanceTimeGradient"] = (self.game.bosses_dict["ValidSpawningPosition"].rect.centery - middle_camera_position[1]) / (self.camera_pan_information_dict["PanTime"] / 1000)
+            self.camera_pan_information_dict["PanHorizontalDistanceTimeGradient"] = (self.game.boss_spawner.bosses_dict["ValidSpawningPosition"].rect.centerx - middle_camera_position[0]) / (self.camera_pan_information_dict["PanTime"] / 1000)
+            self.camera_pan_information_dict["PanVerticalDistanceTimeGradient"] = (self.game.boss_spawner.bosses_dict["ValidSpawningPosition"].rect.centery - middle_camera_position[1]) / (self.camera_pan_information_dict["PanTime"] / 1000)
 
             # Set the new camera position X and Y to be the current camera position
             self.camera_pan_information_dict["NewCameraPositionX"] = self.position[0]
