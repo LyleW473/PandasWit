@@ -131,7 +131,7 @@ class SikaDeerBoss(Generic, AI):
                                             "ChargeDirection": None,
                                             "ChargeAngle": None,
                                             "PlayerPosAtChargeTime": None,
-                                            "EnterStunnedStateBoolean": False, # A boolean value that represents whether the boss has collided with the player during the charge attack"
+                                            "EnterStunnedState": False, # A boolean value that represents whether the boss has collided with the player during the charge attack"
 
                                             # Movement (Keep the time values to be less than the full charge duration)
                                             "ChargeDistanceTravelled": 8 * TILE_SIZE, # 10 * TILE_SIZE
@@ -462,21 +462,27 @@ class SikaDeerBoss(Generic, AI):
                 # Reset the current charge direction back to None
                 self.behaviour_patterns_dict["Charge"]["ChargeDirection"] = None
 
-                # If "EnterStunnedStateBoolean" was set to True, i.e. the boss collided a building tile
-                if self.behaviour_patterns_dict["Charge"]["EnterStunnedStateBoolean"] == True:
-                    # Set the current action to "Stunned"
-                    self.current_action = "Stunned"
+                match self.behaviour_patterns_dict["Charge"]["EnterStunnedState"]:
 
-                    # Set the "Stunned" duration timer to start counting down
-                    self.behaviour_patterns_dict["DurationTimer"] = self.behaviour_patterns_dict["Stunned"]["Duration"]
+                    case "BuildingTile" | "WorldTile":
+                        # Set the current action to "Stunned"
+                        self.current_action = "Stunned"
 
-                    # Set "EnterStunnedStateBoolean" back to False
-                    self.behaviour_patterns_dict["Charge"]["EnterStunnedStateBoolean"] = False
-                
-                # If "EnterStunnedStateBoolean" is set to False, i.e. the boss did not collide with a building tile
-                elif self.behaviour_patterns_dict["Charge"]["EnterStunnedStateBoolean"] == False:
-                    # Set the current action back to Chase
-                    self.current_action = "Chase"
+                        if self.behaviour_patterns_dict["Charge"]["EnterStunnedState"] == "BuildingTile":
+                            # Set the "Stunned" duration timer to start counting down
+                            self.behaviour_patterns_dict["DurationTimer"] = self.behaviour_patterns_dict["Stunned"]["Duration"]
+
+                        elif self.behaviour_patterns_dict["Charge"]["EnterStunnedState"] == "WorldTile":
+                            # Set the "Stunned" duration timer to be half the default amount
+                            self.behaviour_patterns_dict["DurationTimer"] = (self.behaviour_patterns_dict["Stunned"]["Duration"] * 0.5)
+
+                        # Set this variable back to None
+                        self.behaviour_patterns_dict["Charge"]["EnterStunnedState"] = None
+
+                    # No collision / collided with the player
+                    case None:
+                        self.current_action = "Chase"
+
                     
             # Stomp
             case "Stomp":

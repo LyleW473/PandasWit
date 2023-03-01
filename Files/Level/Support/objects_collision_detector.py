@@ -792,13 +792,10 @@ class ObjectCollisionDetector:
             self.game.play_manual_sound(sound_effect = "ChargeTileCollision")
 
             # Set the player to change into the "Stunned" state (this will be done inside the SikaDeer class)
-            self.game.boss_group.sprite.behaviour_patterns_dict["Charge"]["EnterStunnedStateBoolean"] = True
+            self.game.boss_group.sprite.behaviour_patterns_dict["Charge"]["EnterStunnedState"] = "WorldTile"
 
             # Set the "Charge" duration timer to 0, to end the charge attack
             self.game.boss_group.sprite.behaviour_patterns_dict["DurationTimer"] = 0
-
-            # Set the "Stunned" duration timer to start counting down from half the duration (should be shorter as the player did not block them)
-            self.game.boss_group.sprite.behaviour_patterns_dict["DurationTimer"] = (self.game.boss_group.sprite.behaviour_patterns_dict["Stunned"]["Duration"] / 2)
 
             # Create a camera shake effect for when the boss collides with a tile
             self.game.camera.camera_shake_info_dict["EventsList"].append("BossTileCollide")
@@ -878,7 +875,7 @@ class ObjectCollisionDetector:
                             self.game.boss_group.sprite.reset_movement_acceleration(horizontal_reset = True, vertical_reset = True)
 
                             # Set the player to change into the "Stunned" state (this will be done inside the SikaDeer class)
-                            self.game.boss_group.sprite.behaviour_patterns_dict["Charge"]["EnterStunnedStateBoolean"] = True
+                            self.game.boss_group.sprite.behaviour_patterns_dict["Charge"]["EnterStunnedState"] = "BuildingTile"
 
                             # Set the "Charge" duration timer to 0, to end the charge attack
                             self.game.boss_group.sprite.behaviour_patterns_dict["DurationTimer"] = 0
